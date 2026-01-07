@@ -1,51 +1,70 @@
-package main
+package Presentation
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 )
 
-func ErrorValidation(content string, response_error http.ResponseWriter) {
-	response_error.WriteHeader(400)
-	json.NewEncoder(response_error).Encode("Sem payload")
-}
-
-func ValidationBody(response_write http.ResponseWriter, request *http.Request) {
-	bodyBytes, err := io.ReadAll(request.Body)
-	if err == nil && len(bodyBytes) <= 0 {
-		ErrorValidation("Sem payload", response_write)
+func ValidationBody(response_write http.ResponseWriter, request *http.Request) error {
+	bodyBytes, _ := io.ReadAll(request.Body)
+	if string(bodyBytes) == "{\n\t\n}" {
+		return ThrowException("Sem payload")
 	}
+
+	return nil
 }
 
-func ValidationFormat(content string) {
-
-}
-
-func ValidationLenght(content string, maxsize int, name string, operator string, response http.ResponseWriter) {
+func ValidationLenght(content string, maxsize int, name string, operator string) error {
 
 	switch operator {
 	case "Upper":
 		if strings.Count(content, "") > maxsize {
-			ErrorValidation(fmt.Sprintf("O campo %s foi superior ao limite de %d caracteres", name, maxsize), response)
+			return ThrowException(fmt.Sprintf("O campo %s foi superior ao limite de %d caracteres", name, maxsize))
 		}
 
 	case "Different":
 		if strings.Count(content, "") != maxsize {
-			ErrorValidation(fmt.Sprintf("O campo %s foi diferente do limite de %d caracteres", name, maxsize), response)
+			return ThrowException(fmt.Sprintf("O campo %s foi diferente do limite de %d caracteres", name, maxsize))
 		}
 	}
 
+	return nil
 }
 
-func ValidationFieldsStudent(studentdto StudentDTO, response http.ResponseWriter) {
-	ValidationLenght(studentdto.Name, 20, "Name", "Upper", response)
-	ValidationLenght(studentdto.CPF, 11, "CPF", "Different", response)
-	ValidationLenght(studentdto.RG, 9, "RG", "Different", response)
-	ValidationLenght(studentdto.Username, 9, "Username", "Different", response)
-	ValidationLenght(studentdto.CEP, 8, "CEP", "Different", response)
-	ValidationLenght(studentdto.DateBirth, 10, "Date Birth", "Different", response)
+func ValidationIsNullOrWhiteSpace(content string) error {
+	if content == "" {
+		return ThrowException("Nao existe em informacao em um dos campos enviados")
+	}
+
+	return nil
+}
+
+func ValidationFieldsStudent(studentdto UserDTO) error {
+	var err error
+
+	if ValidationIsNullOrWhiteSpace(studentdto.CPF) != nil ||
+		ValidationLenght(studentdto.CPF, 11, "CPF", "Different") != nil {
+		return errors.New("CPF nulo ou diferente de 11 caracteres, o cpf deve conter 11 caracteres")
+	}
+
+	if ValidationIsNullOrWhiteSpace(studentdto.Username) !=
+		nil || ValidationLenght(studentdto.Username, 15, "Username", "Upper") != nil {
+		return errors.New("Username nulo ou superior a 30 caracteres")
+	}
+
+	if ValidationIsNullOrWhiteSpace(studentdto.Password) != nil ||
+		ValidationLenght(studentdto.Username, 20, "Password", "Upper") != nil {
+		return errors.New("Password nulo ou superior a 20 caracteres")
+	}
+
+	if ValidationIsNullOrWhiteSpace(studentdto.Password) != nil ||
+		ValidationLenght(studentdto.Username, 8, "CEP", "Different") != nil {
+		return errors.New("CEP diferente de 8 caracteres")
+	}
+
+	return err
 
 }
