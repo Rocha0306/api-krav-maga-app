@@ -26,7 +26,7 @@ func ValidationLenght(content string, maxsize int, name string, operator string)
 		}
 
 	case "Different":
-		if strings.Count(content, "") != maxsize {
+		if count := strings.Count(content, ""); count != maxsize {
 			return ThrowException(fmt.Sprintf("O campo %s foi diferente do limite de %d caracteres", name, maxsize))
 		}
 	}
@@ -42,11 +42,24 @@ func ValidationIsNullOrWhiteSpace(content string) error {
 	return nil
 }
 
+func ValidationFieldsLogin(login_dto LoginDTO) error {
+	
+	if(ValidationIsNullOrWhiteSpace(login_dto.Username) != nil) {
+		return ThrowException("Campo Username nulo ou vazio")
+	}
+
+	if(ValidationIsNullOrWhiteSpace(login_dto.Password) != nil) {
+		return ThrowException("Campo Password nulo ou vazio")
+	}
+	
+	return nil
+}
+
 func ValidationFieldsStudent(studentdto UserDTO) error {
 	var err error
 
 	if ValidationIsNullOrWhiteSpace(studentdto.CPF) != nil ||
-		ValidationLenght(studentdto.CPF, 11, "CPF", "Different") != nil {
+		ValidationLenght(studentdto.CPF, 12, "CPF", "Different") != nil {
 		return errors.New("CPF nulo ou diferente de 11 caracteres, o cpf deve conter 11 caracteres")
 	}
 

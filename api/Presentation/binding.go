@@ -12,6 +12,13 @@ func DesserializeStudentDTO(request *http.Request) UserDTO {
 
 }
 
+func DesserializeLoginDTO(request *http.Request) LoginDTO {
+	var studentdto LoginDTO
+	json.NewDecoder(request.Body).Decode(&studentdto)
+	return studentdto
+
+}
+
 func SerializeErrorMessageResponse(error_message string, response http.ResponseWriter) {
 	json.NewEncoder(response).Encode(error_message)
 }

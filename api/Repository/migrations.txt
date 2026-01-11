@@ -1,0 +1,31 @@
+CREATE TABLE address (
+    id            INT UNSIGNED NOT NULL PRIMARY KEY,
+    cep           VARCHAR(10) NOT NULL,
+    logradouro    VARCHAR(255),
+    complemento   VARCHAR(255),
+    unidade       VARCHAR(50),
+    bairro        VARCHAR(100),
+    localidade    VARCHAR(100),
+    uf            CHAR(2),
+    estado        VARCHAR(100),
+    regiao        VARCHAR(50),
+    ddd           VARCHAR(5)
+);
+
+CREATE TABLE student (
+    id           INT UNSIGNED NOT NULL PRIMARY KEY,
+    name         VARCHAR(150) NOT NULL,
+    username     VARCHAR(20) NOT NULL UNIQUE,
+    password 	 varchar(20) NOT NULL,
+    gender       CHAR(10),
+    cpf          CHAR(11) NOT NULL UNIQUE,
+    date_birth   DATE,
+    belt         VARCHAR(10),
+    role         VARCHAR(15),
+    address_id   INT UNSIGNED,
+
+    CONSTRAINT fk_student_address
+        FOREIGN KEY (address_id)
+        REFERENCES address(id)
+        ON DELETE SET NULL
+);

@@ -1,23 +1,32 @@
 package entities
 
-type StudentEntity struct {
-	Id        uint32
+type Student struct {
+	Id        int
 	Name      string
 	Username  string
+	Password  string
 	Gender    string
 	CPF       string
 	DateBirth string
 	Belt      string
-	Gym       Gym
-	Adress    Address
+	Role      string
+	Address   Address
 }
 
 type Gym struct {
-	gym_name string
-	cep      string
+	GymName string
+	cep     string
+}
+
+// Tabela associativa | muitos para muitos
+type Gym_Student struct {
+	id      int
+	Gym     int
+	Student int
 }
 
 type Address struct {
+	Id          int
 	CEP         string
 	Logradouro  string
 	Complemento string
@@ -28,4 +37,12 @@ type Address struct {
 	Estado      string
 	Regiao      string
 	DDD         string
+}
+
+func VerifyIsStudentExist(username string, password string, entity Student) bool {
+	if entity.Username == username && entity.Password == password {
+		return true
+	} else {
+		return false
+	}
 }

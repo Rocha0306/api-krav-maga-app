@@ -20,59 +20,50 @@ var api_keys = [9]string{
 	"2e1e23409686cbd7d3fd9ee84bfdf986367606d52d5413385fc89ff1e48c0cf2",
 }
 
-type data struct {
-	cpf       string
-	name      string
-	gender    string
-	birthDate string
-}
-
-type error_api struct {
-	message string
-}
-
 type CpfApiResponse struct {
-	sucess    bool
-	error_api error_api
-	data      data
-	CPF       string
-	Name      string
-	Gender    string
-	BirthDate string
+	Success bool `json:"success"`
+	Data    Data `json:"data"`
+}
+
+type Data struct {
+	CPF       string `json:"cpf"`
+	Name      string `json:"name"`
+	Gender    string `json:"gender"`
+	BirthDate string `json:"birthDate"`
 }
 
 type CepApiResponse struct {
-	CEP         string
-	Logradouro  string
-	Complemento string
-	Unidade     string
-	Bairro      string
-	Localidade  string
-	UF          string
-	Estado      string
-	Regiao      string
-	DDD         string
+	CEP         string `json:"cep"`
+	Logradouro  string `json:"logradouro"`
+	Complemento string `json:"complemento"`
+	Unidade     string `json:"unidade"`
+	Bairro      string `json:"bairro"`
+	Localidade  string `json:"localidade"`
+	UF          string `json:"uf"`
+	Estado      string `json:"estado"`
+	Regiao      string `json:"regiao"`
+	DDD         string `json:"ddd"`
 }
 
 func CpfApi(cpf string) (error, CpfApiResponse) {
-	var private_response_desserialized CpfApiResponse = CpfApiResponse{}
+	var private_response_desserialized CpfApiResponse
 	url := fmt.Sprintf("https://api.cpfhub.io/cpf/%s", cpf)
 	client := &http.Client{}
 	for i := 0; i < 9; i++ {
 		request, err := http.NewRequest("GET", url, nil)
 		if err == nil {
 			request.Header.Add("x-api-key", api_keys[i])
+			request.Header.Add("content-type", "application/json")
+			request.Header.Add("Accept-Encoding", "identity")
 		}
 
-		response, err := client.Do(request)
+		raw_response, err := client.Do(request)
+		json.NewDecoder(raw_response.Body).Decode(&private_response_desserialized)
 
-		json.NewDecoder(response.Body).Decode(&private_response_desserialized)
-
-		if private_response_desserialized.sucess == false && private_response_desserialized.error_api.message != "" {
-			return errors.New(private_response_desserialized.error_api.message), private_response_desserialized
+		if private_response_desserialized.Success == true {
+			return nil, private_response_desserialized
 		} else {
-			return err, filteredcpfresponse(private_response_desserialized)
-
+			continue
 		}
 
 	}
@@ -82,10 +73,14 @@ func CpfApi(cpf string) (error, CpfApiResponse) {
 }
 
 func CepApi(cep string) (error, CepApiResponse) {
-	url := fmt.Sprintf("viacep.com.br/ws/%s/json/", cep)
+	url := fmt.Sprintf("https://viacep.com.br/ws/%s/json/", cep)
 	response_desserialized := CepApiResponse{}
 
-	response, err := http.Get(url)
+	request, _ := http.NewRequest("GET", url, nil)
+
+	client := &http.Client{}
+
+	response, err := client.Do(request)
 
 	if err != nil {
 		WriteLogsMongoDb("Erro API via Cep, verificar!", "InterfaceAdapters/apis.go/CepApi()")
@@ -94,19 +89,6 @@ func CepApi(cep string) (error, CepApiResponse) {
 
 	json.NewDecoder(response.Body).Decode(&response_desserialized)
 
-	if err != nil {
-		return err, CepApiResponse{}
-	}
-
 	return nil, response_desserialized
 
-}
-
-func filteredcpfresponse(raw_response CpfApiResponse) CpfApiResponse {
-	var filtered_response CpfApiResponse = CpfApiResponse{}
-	filtered_response.Name = raw_response.data.name
-	filtered_response.CPF = raw_response.data.cpf
-	filtered_response.Gender = raw_response.data.gender
-	filtered_response.BirthDate = raw_response.data.birthDate
-	return filtered_response
 }

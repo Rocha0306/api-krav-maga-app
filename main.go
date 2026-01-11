@@ -1,14 +1,11 @@
 package main
 
 import (
+	"api-back-end/api/InterfaceAdapters"
 	"api-back-end/api/Presentation"
 	"api-back-end/api/UsersCase"
 	"net/http"
 )
-
-func ControllerLogin(w http.ResponseWriter, r *http.Request) {
-	Presentation.ValidationBody(w, r)
-}
 
 func StatusCode200(response http.ResponseWriter, message string) {
 	response.WriteHeader(200)
@@ -18,15 +15,9 @@ func StatusCode200(response http.ResponseWriter, message string) {
 func BadRequest(response http.ResponseWriter, err error) {
 	response.WriteHeader(400)
 	Presentation.SerializeErrorMessageResponse(err.Error(), response)
-
 }
 
 func ControllerRegistration(response_write http.ResponseWriter, request *http.Request) {
-
-	if err := Presentation.ValidationBody(response_write, request); err != nil {
-		BadRequest(response_write, err)
-		return
-	}
 
 	student_dto := Presentation.DesserializeStudentDTO(request)
 
@@ -45,10 +36,28 @@ func ControllerRegistration(response_write http.ResponseWriter, request *http.Re
 
 }
 
+func ControllerLogin(response http.ResponseWriter, request *http.Request) {
+	student := Presentation.DesserializeLoginDTO(request)
+	err := Presentation.ValidationFieldsLogin(student)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	entity, err := UsersCase.VerifyStudent(student.Username, student.Password)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	StatusCode200(response, InterfaceAdapters.GenerateTokenJwt(entity.Role))
+}
+
 func main() {
 
-	http.HandleFunc("/Students/Auth", ControllerLogin)
-	http.HandleFunc("/Students/Registration", ControllerRegistration)
+	http.HandleFunc("/Student/Auth", ControllerLogin)
+	http.HandleFunc("/Student/Registration", ControllerRegistration)
 	http.ListenAndServe(":8080", nil)
 
 }
