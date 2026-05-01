@@ -1,6 +1,6 @@
 package entities
 
-type Student struct {
+type User struct {
 	Id        int
 	Name      string
 	Username  string
@@ -8,8 +8,6 @@ type Student struct {
 	Gender    string
 	CPF       string
 	DateBirth string
-	Belt      string
-	Role      string
 	Address   Address
 }
 
@@ -37,12 +35,4 @@ type Address struct {
 	Estado      string
 	Regiao      string
 	DDD         string
-}
-
-func VerifyIsStudentExist(username string, password string, entity Student) bool {
-	if entity.Username == username && entity.Password == password {
-		return true
-	} else {
-		return false
-	}
 }

@@ -12,7 +12,7 @@ CREATE TABLE address (
     ddd           VARCHAR(5)
 );
 
-CREATE TABLE student (
+CREATE TABLE Users (
     id           INT UNSIGNED NOT NULL PRIMARY KEY,
     name         VARCHAR(150) NOT NULL,
     username     VARCHAR(20) NOT NULL UNIQUE,
@@ -20,12 +20,12 @@ CREATE TABLE student (
     gender       CHAR(10),
     cpf          CHAR(11) NOT NULL UNIQUE,
     date_birth   DATE,
-    belt         VARCHAR(10),
-    role         VARCHAR(15),
     address_id   INT UNSIGNED,
 
-    CONSTRAINT fk_student_address
+    CONSTRAINT fk_users_address
         FOREIGN KEY (address_id)
         REFERENCES address(id)
         ON DELETE SET NULL
 );
+
+

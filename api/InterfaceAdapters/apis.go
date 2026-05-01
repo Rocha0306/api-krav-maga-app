@@ -45,6 +45,9 @@ type CepApiResponse struct {
 	DDD         string `json:"ddd"`
 }
 
+type CnpjApiResponse struct {
+}
+
 func CpfApi(cpf string) (error, CpfApiResponse) {
 	var private_response_desserialized CpfApiResponse
 	url := fmt.Sprintf("https://api.cpfhub.io/cpf/%s", cpf)
@@ -58,13 +61,18 @@ func CpfApi(cpf string) (error, CpfApiResponse) {
 		}
 
 		raw_response, err := client.Do(request)
-		json.NewDecoder(raw_response.Body).Decode(&private_response_desserialized)
 
-		if private_response_desserialized.Success == true {
-			return nil, private_response_desserialized
-		} else {
+		if raw_response.StatusCode == 400 {
+			return errors.New("CPF invalido"), private_response_desserialized
+		}
+
+		if raw_response.StatusCode == 403 {
 			continue
 		}
+
+		json.NewDecoder(raw_response.Body).Decode(&private_response_desserialized)
+
+		return nil, private_response_desserialized
 
 	}
 
