@@ -2,7 +2,7 @@ package Presentation
 
 import "net/http"
 
-func StatusCode200(response http.ResponseWriter, message string) {
+func StatusCode200(response http.ResponseWriter, message any) {
 	response.WriteHeader(200)
 	SerializeMessageResponse(message, response)
 }

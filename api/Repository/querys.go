@@ -6,36 +6,28 @@ import (
 	"strings"
 )
 
-func createQueryInsert(entity any, table_name string, size int) string {
-	var values []string
+func createQueryInsert(entity any, size int) (string, []any) {
+	var placeholders []string
+	var args []any
+	table_name := strings.Split(reflect.TypeOf(entity).String(), ".")[1]
 
 	for i := 0; i < size; i++ {
+		field := reflect.ValueOf(entity).Field(i)
 
-		value := reflect.ValueOf(entity).Field(i).String()
-		kind_value := reflect.ValueOf(entity).Field(i).Kind().String()
-
-		switch kind_value {
-		case "int":
-			values = append(values, fmt.Sprint(int(reflect.ValueOf(entity).Field(i).Int())))
-		case "struct":
-			values = append(values, fmt.Sprint(int(reflect.ValueOf(entity).Field(i).Field(0).Int())))
+		switch field.Kind() {
+		case reflect.Int:
+			args = append(args, int(field.Int()))
+		case reflect.Struct:
+			args = append(args, int(field.Field(0).Int()))
 		default:
-			changed_value := fmt.Sprintf("'%s'", value)
-			values = append(values, changed_value)
+			args = append(args, field.String())
 		}
 
+		placeholders = append(placeholders, "?")
 	}
 
-	query := fmt.Sprint(
-		"INSERT INTO ",
-		table_name,
-		" VALUES (",
-		strings.Join(values, ","),
-		")",
-	)
-
-	return query
-
+	query := fmt.Sprintf("INSERT INTO %s VALUES (%s)", table_name, strings.Join(placeholders, ","))
+	return query, args
 }
 
 /*
@@ -47,36 +39,28 @@ func createQueryInsert(entity any, table_name string, size int) string {
  2,3
 */
 
-func createQuerySelectWhere(entity any, fields []int, content_where string) string {
+func createQuerySelectWhere(entity any, fields []int, content_where string) (string, []any) {
 	raw_table_name := strings.Split(reflect.TypeOf(entity).String(), ".")
 	table_name := raw_table_name[1]
 	var fields_string []string
 	var field_where string
 
-	//2,3,8
-
 	for i := 0; i < len(fields); i++ {
 		value := fields[i]
+		fields_string = append(fields_string, reflect.TypeOf(entity).Field(value).Name)
 		if i == 0 {
-			fields_string = append(fields_string, reflect.TypeOf(entity).Field(value).Name)
 			field_where = reflect.TypeOf(entity).Field(value).Name
-		} else {
-			fields_string = append(fields_string, reflect.TypeOf(entity).Field(value).Name)
 		}
 	}
 
-	query := fmt.Sprint(
-		"SELECT ",
+	query := fmt.Sprintf(
+		"SELECT %s FROM %s WHERE %s = ?",
 		strings.Join(fields_string, ","),
-		" FROM ",
 		table_name,
-		" WHERE ",
 		field_where,
-		"=",
-		fmt.Sprintf("'%s'", content_where),
 	)
 
-	return query
+	return query, []any{content_where}
 }
 
 //SELECT USERNAME, PASSWORD WHERE USERNAME = ""

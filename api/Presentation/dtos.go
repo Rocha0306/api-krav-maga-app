@@ -1,20 +1,28 @@
 package Presentation
 
 type LoginDTO struct {
-	Username string `json:"username" validate:"required"`
+	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
 type UserDTO struct {
-	Username string `json:"username" validate:"required,max=15"`
+	Email    string `json:"email" validate:"required,max=100"`
 	Password string `json:"password" validate:"required,max=20"`
 	CPF      string `json:"cpf"      validate:"required,len=11"`
 	CEP      string `json:"cep"      validate:"required,len=8"`
 }
 
+type CodeUserDTO struct {
+	CodeAuthNumber string `json:"CodeAuthNumber" validate:"required,max=6"`
+}
+
+type InviteCodeUserDTO struct {
+	InviteUUID string `json:"InviteUUID" validate:"required,max=100"`
+}
+
 type GymDTO struct {
 	CNPJ string `json:"cnpj" validate:"required,len=14"`
-	Name string `json:"Name" validate:"required,len=30"`
+	Name string `json:"Name" validate:"required,max=100"`
 }
 
 type ResponseControllerDTO struct {
