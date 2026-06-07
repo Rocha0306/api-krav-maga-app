@@ -350,9 +350,7 @@ func ControllerListarAulasDoDia(response http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	data := request.URL.Query().Get("data")
-
-	aulas, err := UsersCase.ListarAulasDoDia(id_usuario, data)
+	aulas, err := UsersCase.ListarAulasDoDia(id_usuario)
 
 	if err != nil {
 		BadRequest(response, err)

@@ -88,3 +88,8 @@ func EnviarEmail(conteudo string, para []string) error {
 
 	return msg.Send(cliente_smtp)
 }
+
+func DateTimeNow() time.Time {
+	date_time_now, _ := time.Parse("2026-06-07", time.Now().String())
+	return date_time_now
+}

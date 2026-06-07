@@ -17,7 +17,7 @@ import (
 */
 func PrepararUsuario(cpf string, cep string, email string, senha string) error {
 
-	if Repository.Existe[entities.Usuarios]("email", email) {
+	if Repository.Exists[entities.Usuarios]("email", email) {
 		return errors.New("Usuario ja cadastrado")
 	}
 
@@ -55,7 +55,7 @@ func CriarUsuario(codigo_chave string) error {
 }
 
 func Login(email string, senha string) (string, error) {
-	usuario := Repository.BuscarOnde[entities.Usuarios]("email", email)
+	usuario := Repository.SelectWhere[entities.Usuarios]("email", email)
 	senha_hash := InterfaceAdapters.HashSenha(senha)
 
 	if usuario.Email != email && usuario.Senha != senha_hash {
@@ -74,53 +74,53 @@ func CriarAcademia(cnpj string, nome_academia string, id_usuario string) error {
 }
 
 func GerarConvite(id_usuario string) error {
-	if !Repository.Existe[entities.Professores]("id_usuario_professor", id_usuario) {
+	if !Repository.Exists[entities.Professores]("id_usuario_professor", id_usuario) {
 		return errors.New("Voce nao pode criar convites ja que nao eh professor")
 	}
 
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	entidade_convite := InterfaceAdapters.MapearConvite(professor.IDAcademiaProfessor)
 	Repository.Inserir(entidade_convite)
 	return nil
 }
 
 func MostrarConvites(id_usuario string) (entities.Convites, error) {
-	if !Repository.Existe[entities.Professores]("id_usuario_professor", id_usuario) {
+	if !Repository.Exists[entities.Professores]("id_usuario_professor", id_usuario) {
 		return entities.Convites{}, errors.New("Voce nao pode visualizar convites ja que nao eh um professor")
 	}
 
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
-	convite := Repository.BuscarOnde[entities.Convites]("id_academia", professor.IDAcademiaProfessor)
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	convite := Repository.SelectWhere[entities.Convites]("id_academia", professor.IDAcademiaProfessor)
 	return *convite, nil
 }
 
 func SolicitarEntrada(codigo_convite string, id_usuario string) error {
-	if !Repository.Existe[entities.Convites]("chave_convite", codigo_convite) {
+	if !Repository.Exists[entities.Convites]("chave_convite", codigo_convite) {
 		return errors.New("convite nao encontrado")
 	}
 
-	convite := Repository.BuscarOnde[entities.Convites]("chave_convite", codigo_convite)
+	convite := Repository.SelectWhere[entities.Convites]("chave_convite", codigo_convite)
 	solicitacao := InterfaceAdapters.MapearSolicitacaoConvite(convite.IDAcademia, id_usuario)
 	Repository.Inserir(solicitacao)
 	return nil
 }
 
 func ListarSolicitacoesEntrada(id_usuario string) ([]entities.SolicitacoesConvite, error) {
-	if !Repository.Existe[entities.Professores]("id_usuario_professor", id_usuario) {
+	if !Repository.Exists[entities.Professores]("id_usuario_professor", id_usuario) {
 		return nil, errors.New("Voce nao pode visualizar convites ja que nao eh um professor")
 	}
 
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
-	return Repository.BuscarSolicitacoesPorAcademia(professor.IDAcademiaProfessor), nil
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	return Repository.SelectInvitesByGym(professor.IDAcademiaProfessor), nil
 }
 
 func AprovarSolicitacaoEntrada(id_usuario string, id_solicitacao string) error {
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor == "" {
 		return errors.New("voce nao pode aprovar ja que nao eh professor")
 	}
 
-	solicitacao := Repository.BuscarOnde[entities.SolicitacoesConvite]("id_solicitacao", id_solicitacao)
+	solicitacao := Repository.SelectWhere[entities.SolicitacoesConvite]("id_solicitacao", id_solicitacao)
 	if solicitacao.IDSolicitacao == "" {
 		return errors.New("solicitacao nao encontrada")
 	}
@@ -131,26 +131,26 @@ func AprovarSolicitacaoEntrada(id_usuario string, id_solicitacao string) error {
 
 	aluno := InterfaceAdapters.MapearAlunoAprovado(solicitacao.IDUsuario, solicitacao.IDAcademia)
 	Repository.Inserir(&aluno)
-	Repository.Deletar[entities.SolicitacoesConvite]("id_solicitacao", id_solicitacao)
+	Repository.Delete[entities.SolicitacoesConvite]("id_solicitacao", id_solicitacao)
 	return nil
 }
 
 func ListarAlunos(id_usuario string) ([]entities.Alunos, error) {
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor == "" {
 		return nil, errors.New("voce nao pode visualizar alunos ja que nao eh um professor")
 	}
 
-	return Repository.BuscarAlunosPorAcademia(professor.IDAcademiaProfessor), nil
+	return Repository.SelectStudentsByGym(professor.IDAcademiaProfessor), nil
 }
 
 func RemoverAluno(id_usuario string, id_aluno string) error {
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor == "" {
 		return errors.New("voce nao pode remover alunos ja que nao eh um professor")
 	}
 
-	aluno := Repository.BuscarOnde[entities.Alunos]("id_aluno", id_aluno)
+	aluno := Repository.SelectWhere[entities.Alunos]("id_aluno", id_aluno)
 	if aluno.IDAluno == "" {
 		return errors.New("aluno nao encontrado")
 	}
@@ -159,20 +159,20 @@ func RemoverAluno(id_usuario string, id_aluno string) error {
 		return errors.New("esse aluno nao pertence a sua academia")
 	}
 
-	Repository.Deletar[entities.Alunos]("id_aluno", id_aluno)
+	Repository.Delete[entities.Alunos]("id_aluno", id_aluno)
 	return nil
 }
 
 func CriarAula(id_usuario string, conteudo string, data_aula string) error {
 	id_academia := ""
 
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor != "" {
 		id_academia = professor.IDAcademiaProfessor
 	}
 
 	if id_academia == "" {
-		instrutor := Repository.BuscarOnde[entities.Instrutores]("id_usuario_instrutor", id_usuario)
+		instrutor := Repository.SelectWhere[entities.Instrutores]("id_usuario_instrutor", id_usuario)
 		if instrutor.IDInstrutor != "" {
 			id_academia = instrutor.IDAcademiaInstrutor
 		}
@@ -193,12 +193,12 @@ func CriarAula(id_usuario string, conteudo string, data_aula string) error {
 }
 
 func RegistrarPresenca(id_usuario string, id_aula string) error {
-	aluno := Repository.BuscarOnde[entities.Alunos]("id_usuario_aluno", id_usuario)
+	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
 	if aluno.IDAluno == "" {
 		return errors.New("voce nao eh aluno de nenhuma academia")
 	}
 
-	aula := Repository.BuscarOnde[entities.Aulas]("id_aula", id_aula)
+	aula := Repository.SelectWhere[entities.Aulas]("id_aula", id_aula)
 	if aula.IDAula == "" {
 		return errors.New("aula nao encontrada")
 	}
@@ -213,16 +213,16 @@ func RegistrarPresenca(id_usuario string, id_aula string) error {
 }
 
 func ContarPresencasAluno(id_aluno string) int64 {
-	return Repository.Contar[entities.Presencas]("id_aluno", id_aluno)
+	return Repository.Count[entities.Presencas]("id_aluno", id_aluno)
 }
 
 func CriarInstrutor(id_usuario string, id_aluno string) error {
-	professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor == "" {
 		return errors.New("voce nao pode criar instrutores ja que nao eh um professor")
 	}
 
-	aluno := Repository.BuscarOnde[entities.Alunos]("id_aluno", id_aluno)
+	aluno := Repository.SelectWhere[entities.Alunos]("id_aluno", id_aluno)
 	if aluno.IDAluno == "" {
 		return errors.New("aluno nao encontrado")
 	}
@@ -236,36 +236,18 @@ func CriarInstrutor(id_usuario string, id_aluno string) error {
 	return nil
 }
 
-func ListarAulasDoDia(id_usuario string, data string) ([]entities.Aulas, error) {
+func ListarAulasDoDia(id_usuario string) ([]entities.Aulas, error) {
 	id_academia := ""
 
-	aluno := Repository.BuscarOnde[entities.Alunos]("id_usuario_aluno", id_usuario)
+	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
 	if aluno.IDAluno != "" {
 		id_academia = aluno.IDAcademiaAluno
 	}
 
-	if id_academia == "" {
-		professor := Repository.BuscarOnde[entities.Professores]("id_usuario_professor", id_usuario)
-		if professor.IDProfessor != "" {
-			id_academia = professor.IDAcademiaProfessor
-		}
-	}
+	data := InterfaceAdapters.DateTimeNow()
 
-	if id_academia == "" {
-		return nil, errors.New("voce nao esta vinculado a nenhuma academia")
-	}
+	inicio := data
+	fim := data.Add(3 * time.Hour)
 
-	dia := time.Now()
-	if data != "" {
-		parsed, err := time.Parse("2006-01-02", data)
-		if err != nil {
-			return nil, errors.New("data invalida, use o formato AAAA-MM-DD")
-		}
-		dia = parsed
-	}
-
-	inicio := time.Date(dia.Year(), dia.Month(), dia.Day(), 0, 0, 0, 0, dia.Location())
-	fim := inicio.Add(24 * time.Hour)
-
-	return Repository.BuscarAulasDoDia(id_academia, inicio, fim), nil
+	return Repository.SelectDayPresences(id_academia, inicio, fim), nil
 }
