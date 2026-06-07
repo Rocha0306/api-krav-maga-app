@@ -12,41 +12,41 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GenerateUUID() string {
+func GerarUUID() string {
 	return uuid.NewString()
 }
 
-func GenerateId() string {
+func GerarId() string {
 	return strconv.Itoa(int(uuid.New().ID()))
 }
 
-var jwt_key = []byte("lorenzo_teste")
+var chave_jwt = []byte("lorenzo_teste")
 
-func GenerateTokenJwt(id_user string) string {
-	token_claims := jwt.RegisteredClaims{
+func GerarTokenJwt(id_usuario string) string {
+	claims_token := jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
-		Audience:  jwt.ClaimStrings{id_user},
+		Audience:  jwt.ClaimStrings{id_usuario},
 	}
 
-	jwt_token_config := jwt.NewWithClaims(jwt.SigningMethodHS256, token_claims)
+	config_token_jwt := jwt.NewWithClaims(jwt.SigningMethodHS256, claims_token)
 
-	jwt_string, err := jwt_token_config.SignedString(jwt_key)
+	string_jwt, err := config_token_jwt.SignedString(chave_jwt)
 
 	if err == nil {
-		return jwt_string
+		return string_jwt
 	} else {
 		return err.Error()
 	}
 }
 
-func ValidateTokenJwt(tokenString string) (string, error) {
+func ValidarTokenJwt(stringToken string) (string, error) {
 	claims := &jwt.RegisteredClaims{}
 
-	jwt_parseado, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwt_key, nil
+	token_parseado, err := jwt.ParseWithClaims(stringToken, claims, func(token *jwt.Token) (interface{}, error) {
+		return chave_jwt, nil
 	})
 
-	if err != nil || !jwt_parseado.Valid {
+	if err != nil || !token_parseado.Valid {
 		return "", errors.New("jwt invalido")
 	}
 
@@ -57,34 +57,34 @@ func ValidateTokenJwt(tokenString string) (string, error) {
 	return claims.Audience[0], nil
 }
 
-func HashPassword(password string) string {
-	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
+func HashSenha(senha string) string {
+	hash, _ := bcrypt.GenerateFromPassword([]byte(senha), 10)
 	return string(hash)
 }
 
-func GenerateAuthNumber() int {
+func GerarNumeroAuth() int {
 	return rand.IntN(1000000)
 }
 
-func SendEmail(content string, who []string) error {
-	email_from := "l.m.p.rocha2005@gmail.com"
-	smtp_server := mail.NewSMTPClient()
-	smtp_server.Host = "smtp.gmail.com"
-	smtp_server.Port = 587
-	smtp_server.Encryption = mail.EncryptionSTARTTLS
-	smtp_server.Username = email_from
-	smtp_server.Password = "zaug agoi wmtw xceg"
+func EnviarEmail(conteudo string, para []string) error {
+	email_de := "l.m.p.rocha2005@gmail.com"
+	servidor_smtp := mail.NewSMTPClient()
+	servidor_smtp.Host = "smtp.gmail.com"
+	servidor_smtp.Port = 587
+	servidor_smtp.Encryption = mail.EncryptionSTARTTLS
+	servidor_smtp.Username = email_de
+	servidor_smtp.Password = "zaug agoi wmtw xceg"
 
-	smtp_client, err := smtp_server.Connect()
+	cliente_smtp, err := servidor_smtp.Connect()
 	if err != nil {
 		return err
 	}
 
 	msg := mail.NewMSG()
-	msg.SetFrom(email_from)
-	msg.AddTo(who...)
+	msg.SetFrom(email_de)
+	msg.AddTo(para...)
 	msg.SetSubject("Autenticao aplicativo Krav")
-	msg.SetBody(mail.TextPlain, content)
+	msg.SetBody(mail.TextPlain, conteudo)
 
-	return msg.Send(smtp_client)
+	return msg.Send(cliente_smtp)
 }

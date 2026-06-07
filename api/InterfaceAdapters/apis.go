@@ -76,7 +76,7 @@ func CpfApi(cpf string) (error, CpfApiResponse) {
 
 	}
 
-	WriteLogsMongoDb("URGENTE - O limite de requisicoes foi atingido no Cpfhub - 500", "")
+	EscreverLogsMongoDb("URGENTE - O limite de requisicoes foi atingido no Cpfhub - 500", "")
 	return errors.New("Problema interno no servidor"), private_response_desserialized
 }
 
@@ -91,7 +91,7 @@ func CepApi(cep string) (error, CepApiResponse) {
 	response, err := client.Do(request)
 
 	if err != nil {
-		WriteLogsMongoDb("Erro API via Cep, verificar!", "InterfaceAdapters/apis.go/CepApi()")
+		EscreverLogsMongoDb("Erro API via Cep, verificar!", "InterfaceAdapters/apis.go/CepApi()")
 		return errors.New("Erro interno do servidor - 500"), response_desserialized
 	}
 

@@ -5,16 +5,16 @@ import (
 	"net/http"
 )
 
-func Deserialize[T any](request *http.Request) T {
+func Desserializar[T any](request *http.Request) T {
 	var dto T
 	json.NewDecoder(request.Body).Decode(&dto)
 	return dto
 }
 
-func SerializeErrorMessageResponse(error_message string, response http.ResponseWriter) {
-	json.NewEncoder(response).Encode(error_message)
+func SerializarRespostaErro(mensagem_erro string, response http.ResponseWriter) {
+	json.NewEncoder(response).Encode(mensagem_erro)
 }
 
-func SerializeMessageResponse(message any, response http.ResponseWriter) {
-	json.NewEncoder(response).Encode(message)
+func SerializarRespostaMensagem(mensagem any, response http.ResponseWriter) {
+	json.NewEncoder(response).Encode(mensagem)
 }

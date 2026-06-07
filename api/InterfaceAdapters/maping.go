@@ -6,68 +6,108 @@ import (
 	"time"
 )
 
-func MapStudent(email string, password string, user_data CpfApiResponse, user_cep CepApiResponse) *entities.Users {
-	address := &entities.Address{}
-	address.ID = GenerateId()
-	address.CEP = user_cep.CEP
-	address.Logradouro = user_cep.Logradouro
-	address.Complemento = user_cep.Complemento
-	address.Unidade = user_cep.Unidade
-	address.Bairro = user_cep.Bairro
-	address.Localidade = user_cep.Localidade
-	address.UF = user_cep.UF
-	address.Estado = user_cep.Estado
-	address.Regiao = user_cep.Regiao
-	address.DDD = user_cep.DDD
+func MapearUsuario(email string, senha string, dados_usuario CpfApiResponse, dados_cep CepApiResponse) *entities.Usuarios {
+	endereco := &entities.Endereco{}
+	endereco.ID = GerarId()
+	endereco.CEP = dados_cep.CEP
+	endereco.Logradouro = dados_cep.Logradouro
+	endereco.Complemento = dados_cep.Complemento
+	endereco.Unidade = dados_cep.Unidade
+	endereco.Bairro = dados_cep.Bairro
+	endereco.Localidade = dados_cep.Localidade
+	endereco.UF = dados_cep.UF
+	endereco.Estado = dados_cep.Estado
+	endereco.Regiao = dados_cep.Regiao
+	endereco.DDD = dados_cep.DDD
 
-	user := &entities.Users{}
-	user.ID = GenerateId()
-	user.Name = user_data.Data.Name
-	user.CPF = user_data.Data.CPF
-	user.Gender = user_data.Data.Gender
-	date, _ := time.Parse("02/01/2006", user_data.Data.BirthDate)
-	user.DateBirth = date
-	user.Email = email
-	user.Password = HashPassword(password)
-	user.AddressesID = address.ID
-	user.Address = *address
+	usuario := &entities.Usuarios{}
+	usuario.ID = GerarId()
+	usuario.Nome = dados_usuario.Data.Name
+	usuario.CPF = dados_usuario.Data.CPF
+	usuario.Genero = dados_usuario.Data.Gender
+	data, _ := time.Parse("02/01/2006", dados_usuario.Data.BirthDate)
+	usuario.DataNascimento = data
+	usuario.Email = email
+	usuario.Senha = HashSenha(senha)
+	usuario.EnderecoID = endereco.ID
+	usuario.Endereco = *endereco
 
-	return user
+	return usuario
 }
 
-func MapGym(cnpj string, name string) *entities.Gyms {
-	gym := &entities.Gyms{
-		ID:   GenerateId(),
+func MapearAcademia(cnpj string, nome string) *entities.Academias {
+	academia := &entities.Academias{
+		ID:   GerarId(),
 		CNPJ: cnpj,
-		Name: name,
+		Nome: nome,
 	}
 
-	return gym
+	return academia
 
 }
 
-func MapTeacher(id_user string, id_gym string) entities.Teachers {
-	teacher := entities.Teachers{
-		IDTeacher:       GenerateId(),
-		IDGymsTeachers:  id_gym,
-		IDUsersTeachers: id_user,
+func MapearProfessor(id_usuario string, id_academia string) entities.Professores {
+	professor := entities.Professores{
+		IDProfessor:         GerarId(),
+		IDAcademiaProfessor: id_academia,
+		IDUsuarioProfessor:  id_usuario,
 	}
 
-	return teacher
+	return professor
 }
 
-func MapInvite(id_gym string) *entities.Invites {
-	return &entities.Invites{
-		IDInvite:  GenerateId(),
-		IDGym:     id_gym,
-		InviteKey: fmt.Sprintf("URLFrontComParametro?invite=%s", GenerateUUID()),
+func MapearConvite(id_academia string) *entities.Convites {
+	return &entities.Convites{
+		IDConvite:    GerarId(),
+		IDAcademia:   id_academia,
+		ChaveConvite: fmt.Sprintf("URLFrontComParametro?invite=%s", GerarUUID()),
 	}
 }
 
-func MapJoinInvite(id_gym string, id_user string) *entities.InviteRequests {
-	return &entities.InviteRequests{
-		IDRequest: GenerateId(),
-		IDUser:    id_user,
-		IDGym:     id_gym,
+func MapearSolicitacaoConvite(id_academia string, id_usuario string) *entities.SolicitacoesConvite {
+	return &entities.SolicitacoesConvite{
+		IDSolicitacao: GerarId(),
+		IDUsuario:     id_usuario,
+		IDAcademia:    id_academia,
+	}
+}
+
+// Uma aula (sessao): data, conteudo dado, academia e instrutor.
+func MapearAula(conteudo string, id_academia string, id_instrutor string, data_aula time.Time) *entities.Aulas {
+	return &entities.Aulas{
+		IDAula:      GerarId(),
+		DataAula:    data_aula,
+		Conteudo:    conteudo,
+		IDAcademia:  id_academia,
+		IDInstrutor: id_instrutor,
+	}
+}
+
+// Check-in do aluno numa aula. checkin_em = momento do registro.
+func MapearPresenca(id_aluno string, id_aula string) *entities.Presencas {
+	return &entities.Presencas{
+		IDPresenca: GerarId(),
+		IDAluno:    id_aluno,
+		IDAula:     id_aula,
+		CheckinEm:  time.Now(),
+	}
+}
+
+// Promove um usuario (aluno) a instrutor da academia.
+func MapearInstrutor(id_usuario string, id_academia string) *entities.Instrutores {
+	return &entities.Instrutores{
+		IDInstrutor:         GerarId(),
+		IDUsuarioInstrutor:  id_usuario,
+		IDAcademiaInstrutor: id_academia,
+	}
+}
+
+// Monta o aluno que entra na academia quando o professor aprova a solicitacao.
+func MapearAlunoAprovado(id_usuario string, id_academia string) entities.Alunos {
+	return entities.Alunos{
+		IDAluno:         GerarId(),
+		Faixa:           "Branca",
+		IDUsuarioAluno:  id_usuario,
+		IDAcademiaAluno: id_academia,
 	}
 }

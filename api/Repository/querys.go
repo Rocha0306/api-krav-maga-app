@@ -6,61 +6,59 @@ import (
 	"strings"
 )
 
-func createQueryInsert(entity any, size int) (string, []any) {
+func criarQueryInsert(entidade any, tamanho int) (string, []any) {
 	var placeholders []string
 	var args []any
-	table_name := strings.Split(reflect.TypeOf(entity).String(), ".")[1]
+	nome_tabela := strings.Split(reflect.TypeOf(entidade).String(), ".")[1]
 
-	for i := 0; i < size; i++ {
-		field := reflect.ValueOf(entity).Field(i)
+	for i := 0; i < tamanho; i++ {
+		campo := reflect.ValueOf(entidade).Field(i)
 
-		switch field.Kind() {
+		switch campo.Kind() {
 		case reflect.Int:
-			args = append(args, int(field.Int()))
+			args = append(args, int(campo.Int()))
 		case reflect.Struct:
-			args = append(args, int(field.Field(0).Int()))
+			args = append(args, int(campo.Field(0).Int()))
 		default:
-			args = append(args, field.String())
+			args = append(args, campo.String())
 		}
 
 		placeholders = append(placeholders, "?")
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s VALUES (%s)", table_name, strings.Join(placeholders, ","))
+	query := fmt.Sprintf("INSERT INTO %s VALUES (%s)", nome_tabela, strings.Join(placeholders, ","))
 	return query, args
 }
 
 /*
- O primeiro campo do Fields será também a coluna do WHERE, passe os campos e lembre-se
- que o primeira coluna sempre será a WHERE ou seja
+ O primeiro campo do Campos sera tambem a coluna do WHERE, passe os campos e lembre-se
+ que a primeira coluna sempre sera a WHERE ou seja
 
  USERNAME, PASSWORD WHERE USERNAME =
 
  2,3
 */
 
-func createQuerySelectWhere(entity any, fields []int, content_where string) (string, []any) {
-	raw_table_name := strings.Split(reflect.TypeOf(entity).String(), ".")
-	table_name := raw_table_name[1]
-	var fields_string []string
-	var field_where string
+func criarQuerySelectWhere(entidade any, campos []int, conteudo_where string) (string, []any) {
+	nome_tabela_bruto := strings.Split(reflect.TypeOf(entidade).String(), ".")
+	nome_tabela := nome_tabela_bruto[1]
+	var campos_string []string
+	var campo_where string
 
-	for i := 0; i < len(fields); i++ {
-		value := fields[i]
-		fields_string = append(fields_string, reflect.TypeOf(entity).Field(value).Name)
+	for i := 0; i < len(campos); i++ {
+		valor := campos[i]
+		campos_string = append(campos_string, reflect.TypeOf(entidade).Field(valor).Name)
 		if i == 0 {
-			field_where = reflect.TypeOf(entity).Field(value).Name
+			campo_where = reflect.TypeOf(entidade).Field(valor).Name
 		}
 	}
 
 	query := fmt.Sprintf(
 		"SELECT %s FROM %s WHERE %s = ?",
-		strings.Join(fields_string, ","),
-		table_name,
-		field_where,
+		strings.Join(campos_string, ","),
+		nome_tabela,
+		campo_where,
 	)
 
-	return query, []any{content_where}
+	return query, []any{conteudo_where}
 }
-
-//SELECT USERNAME, PASSWORD WHERE USERNAME = ""

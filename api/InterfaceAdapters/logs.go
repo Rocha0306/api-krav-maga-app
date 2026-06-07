@@ -7,23 +7,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Logs struct {
-	StackTrace   string
-	ErrorMessage string
+type Registros struct {
+	PilhaErro    string
+	MensagemErro string
 }
 
-func WriteLogsMongoDb(error_message string, StackTrace string) (bool, string) {
+func EscreverLogsMongoDb(mensagem_erro string, pilha_erro string) (bool, string) {
 
-	log_database, connection_error_database := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb+srv://lmp:lorenzo05@kravmagaapplogs.eg0vvd9.mongodb.net/"))
+	banco_logs, erro_conexao_banco := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb+srv://lmp:lorenzo05@kravmagaapplogs.eg0vvd9.mongodb.net/"))
 
-	if connection_error_database != nil {
+	if erro_conexao_banco != nil {
 		return false, "Error to connect mongodb"
 	}
 
-	database := log_database.Database("kravmagalogs")
+	banco := banco_logs.Database("kravmagalogs")
 
-	Logs := Logs{error_message, StackTrace}
-	database.Collection("logs").InsertOne(context.Background(), Logs)
+	registros := Registros{mensagem_erro, pilha_erro}
+	banco.Collection("logs").InsertOne(context.Background(), registros)
 
 	return true, "The content was write on logs"
 }

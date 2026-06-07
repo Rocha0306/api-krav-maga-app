@@ -2,12 +2,12 @@ package Presentation
 
 import "net/http"
 
-func StatusCode200(response http.ResponseWriter, message any) {
+func Status200(response http.ResponseWriter, mensagem any) {
 	response.WriteHeader(200)
-	SerializeMessageResponse(message, response)
+	SerializarRespostaMensagem(mensagem, response)
 }
 
 func BadRequest(response http.ResponseWriter, err error) {
 	response.WriteHeader(400)
-	SerializeErrorMessageResponse(err.Error(), response)
+	SerializarRespostaErro(err.Error(), response)
 }

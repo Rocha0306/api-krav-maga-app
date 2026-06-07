@@ -10,7 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func openredis() *redis.Client {
+func abrirRedis() *redis.Client {
 	return redis.NewClient(&redis.Options{
 		Addr:     "redis-15478.crce296.us-east-1-6.ec2.cloud.redislabs.com:15478",
 		Username: "default",
@@ -19,23 +19,23 @@ func openredis() *redis.Client {
 	})
 }
 
-func PutUserCache(code_auth string, user entities.Users) error {
-	bytes, _ := json.Marshal(user)
-	return openredis().Set(context.Background(), code_auth, bytes, 15*time.Minute).Err()
+func SalvarUsuarioCache(codigo_auth string, usuario entities.Usuarios) error {
+	bytes, _ := json.Marshal(usuario)
+	return abrirRedis().Set(context.Background(), codigo_auth, bytes, 15*time.Minute).Err()
 }
 
-func GetUserCache(key string) (entities.Users, error) {
-	user := entities.Users{}
+func PegarUsuarioCache(chave string) (entities.Usuarios, error) {
+	usuario := entities.Usuarios{}
 
-	val, err := openredis().Get(context.Background(), key).Bytes()
+	val, err := abrirRedis().Get(context.Background(), chave).Bytes()
 	if err == redis.Nil {
-		return user, errors.New("conteudo nao encontrado em cache")
+		return usuario, errors.New("conteudo nao encontrado em cache")
 	}
 
-	err = json.Unmarshal(val, &user)
-	return user, err
+	err = json.Unmarshal(val, &usuario)
+	return usuario, err
 }
 
-func RemoveValueFromCache(key string) {
-	openredis().Del(context.Background(), key)
+func RemoverValorCache(chave string) {
+	abrirRedis().Del(context.Background(), chave)
 }

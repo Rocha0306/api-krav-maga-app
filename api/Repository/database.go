@@ -1,18 +1,20 @@
 package Repository
 
 import (
+	entities "api-back-end/api/Entities"
 	"fmt"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-const Address string = "localhost"
-const User string = "root"
-const Password string = "lorenzo05*"
-const database_name string = "KRAVMAGAAPP"
+const enderecoBanco string = "localhost"
+const usuarioBanco string = "root"
+const senhaBanco string = "lorenzo05*"
+const nome_banco string = "KRAVMAGAAPP"
 
-func connectDatabase() *gorm.DB {
+func conectarBanco() *gorm.DB {
 	dsn := "root:lorenzo05*@tcp(localhost)/KRAVMAGAAPP?parseTime=True"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -22,31 +24,72 @@ func connectDatabase() *gorm.DB {
 
 }
 
-func Insert[T any](entity *T) {
-	connectDatabase().Create(entity)
+func Inserir[T any](entidade *T) {
+	conectarBanco().Create(entidade)
 }
 
-func SelectWhere[T any](field string, value string) *T {
-	var result T
-	connectDatabase().Where(field+" = ?", value).First(&result)
-	return &result
+func BuscarOnde[T any](campo string, valor string) *T {
+	var resultado T
+	conectarBanco().Where(campo+" = ?", valor).First(&resultado)
+	return &resultado
 }
 
-func SelectWhereList[T any](field string, value string) []T {
-	var results []T
-	connectDatabase().Where(field+" = ?", value).Find(&results)
-	return results
+func BuscarListaOnde[T any](campo string, valor string) []T {
+	var resultados []T
+	conectarBanco().Where(campo+" = ?", valor).Find(&resultados)
+	return resultados
 }
 
-func SelectJoin[T any](join string, field string, value string) []T {
-	var results []T
-	connectDatabase().Joins(join).Where(field+" = ?", value).Find(&results)
-	return results
+func BuscarJoin[T any](join string, campo string, valor string) []T {
+	var resultados []T
+	conectarBanco().Joins(join).Where(campo+" = ?", valor).Find(&resultados)
+	return resultados
 }
 
-func Exists[T any](field string, value string) bool {
-	var model T
-	var count int64
-	connectDatabase().Model(&model).Where(field+" = ?", value).Count(&count)
-	return count > 0
+func BuscarSolicitacoesPorAcademia(id_academia string) []entities.SolicitacoesConvite {
+	var resultados []entities.SolicitacoesConvite
+	conectarBanco().
+		Joins("Usuario").
+		Joins("Usuario.Endereco").
+		Where("solicitacoes_convite.id_academia = ?", id_academia).
+		Find(&resultados)
+	return resultados
+}
+
+// Uma unica query: alunos LEFT JOIN usuarios, ja preenchendo o Usuario de cada aluno.
+func BuscarAlunosPorAcademia(id_academia string) []entities.Alunos {
+	var resultados []entities.Alunos
+	conectarBanco().
+		Joins("Usuario").
+		Where("alunos.id_academia_aluno = ?", id_academia).
+		Find(&resultados)
+	return resultados
+}
+
+// Aulas de uma academia dentro de um intervalo de tempo (ex: o dia inteiro).
+func BuscarAulasDoDia(id_academia string, inicio time.Time, fim time.Time) []entities.Aulas {
+	var resultados []entities.Aulas
+	conectarBanco().
+		Where("id_academia = ? AND data_aula >= ? AND data_aula < ?", id_academia, inicio, fim).
+		Find(&resultados)
+	return resultados
+}
+
+func Deletar[T any](campo string, valor string) {
+	var modelo T
+	conectarBanco().Where(campo+" = ?", valor).Delete(&modelo)
+}
+
+func Contar[T any](campo string, valor string) int64 {
+	var modelo T
+	var contagem int64
+	conectarBanco().Model(&modelo).Where(campo+" = ?", valor).Count(&contagem)
+	return contagem
+}
+
+func Existe[T any](campo string, valor string) bool {
+	var modelo T
+	var contagem int64
+	conectarBanco().Model(&modelo).Where(campo+" = ?", valor).Count(&contagem)
+	return contagem > 0
 }
