@@ -64,18 +64,22 @@ func HashSenha(senha string) string {
 	return string(hash)
 }
 
+func ComparaSenhaHash(hash string, senha string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(senha)) == nil
+}
+
 func GerarNumeroAuth() int {
 	return rand.IntN(1000000)
 }
 
 func EnviarEmail(conteudo string, para []string) error {
-	email_de := "l.m.p.rocha2005@gmail.com"
+	email_de := "kravconnect@gmail.com"
 	servidor_smtp := mail.NewSMTPClient()
 	servidor_smtp.Host = "smtp.gmail.com"
 	servidor_smtp.Port = 587
 	servidor_smtp.Encryption = mail.EncryptionSTARTTLS
 	servidor_smtp.Username = email_de
-	servidor_smtp.Password = "zaug agoi wmtw xceg"
+	servidor_smtp.Password = "ydqr kcag chut zvcb"
 
 	cliente_smtp, err := servidor_smtp.Connect()
 	if err != nil {
@@ -99,7 +103,7 @@ func DateTimeNow() time.Time {
 
 var regexDominioEmail = regexp.MustCompile(`@(gmail|hotmail|outlook)\.com$`)
 
-func DominioEmailValido(email string) bool {
+func RegexDominioEmail(email string) bool {
 	return regexDominioEmail.MatchString(email)
 }
 

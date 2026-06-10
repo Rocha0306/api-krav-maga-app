@@ -96,11 +96,11 @@ func (Aulas) TableName() string { return "aulas" }
 
 type Presencas struct {
 	IDPresenca string    `gorm:"primaryKey;column:id_presenca;type:varchar(100)"`
-	IDAluno    string    `gorm:"column:id_aluno"`
-	IDAula     string    `gorm:"column:id_aula"`
+	AlunoID    string    `gorm:"column:id_aluno;type:varchar(100)"`
+	AulaID     string    `gorm:"column:id_aula;type:varchar(100)"`
 	CheckinEm  time.Time `gorm:"column:checkin_em"`
-	Aluno      Alunos    `gorm:"foreignKey:IDAluno;references:IDAluno"`
-	Aula       Aulas     `gorm:"foreignKey:IDAula;references:IDAula"`
+	Aluno      Alunos    `gorm:"foreignKey:AlunoID;references:IDAluno"`
+	Aula       Aulas     `gorm:"foreignKey:AulaID;references:IDAula"`
 }
 
 func (Presencas) TableName() string { return "presencas" }
@@ -117,12 +117,12 @@ func (Instrutores) TableName() string { return "instrutores" }
 
 type Pagamentos struct {
 	IDPagamento     string    `gorm:"primaryKey;column:id_pagamento;type:varchar(100)"`
-	IDAluno         string    `gorm:"column:id_aluno"`
+	AlunoID         string    `gorm:"column:id_aluno;type:varchar(100)"`
 	ValorCentavos   int64     `gorm:"column:valor_centavos"`
 	Status          string    `gorm:"column:status;type:varchar(30)"`
 	IDPaymentIntent string    `gorm:"column:id_payment_intent;type:varchar(100)"`
 	CriadoEm        time.Time `gorm:"column:criado_em"`
-	Aluno           Alunos    `gorm:"foreignKey:IDAluno;references:IDAluno"`
+	Aluno           Alunos    `gorm:"foreignKey:AlunoID;references:IDAluno"`
 }
 
 func (Pagamentos) TableName() string { return "pagamentos" }
@@ -141,11 +141,11 @@ func (Produtos) TableName() string { return "produtos" }
 
 type Interesses struct {
 	IDInteresse string   `gorm:"primaryKey;column:id_interesse;type:varchar(100)"`
-	IDAluno     string   `gorm:"column:id_aluno"`
-	IDProduto   string   `gorm:"column:id_produto"`
+	AlunoID     string   `gorm:"column:id_aluno;type:varchar(100)"`
+	ProdutoID   string   `gorm:"column:id_produto;type:varchar(100)"`
 	Quantidade  int      `gorm:"column:quantidade"`
-	Aluno       Alunos   `gorm:"foreignKey:IDAluno;references:IDAluno"`
-	Produto     Produtos `gorm:"foreignKey:IDProduto;references:IDProduto"`
+	Aluno       Alunos   `gorm:"foreignKey:AlunoID;references:IDAluno"`
+	Produto     Produtos `gorm:"foreignKey:ProdutoID;references:IDProduto"`
 }
 
 func (Interesses) TableName() string { return "interesses" }

@@ -19,6 +19,11 @@ func ControllerCadastro(response_write http.ResponseWriter, request *http.Reques
 		return
 	}
 
+	if !DominioEmailValido(usuario_dto.Email) {
+		BadRequest(response_write, errors.New("use um email gmail, hotmail ou outlook"))
+		return
+	}
+
 	if err := UsersCase.PrepararUsuario(usuario_dto.CPF, usuario_dto.CEP,
 		usuario_dto.Email, usuario_dto.Senha); err != nil {
 		BadRequest(response_write, err)
@@ -59,6 +64,11 @@ func ControllerLogin(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if !DominioEmailValido(usuario.Email) {
+		BadRequest(response, errors.New("use um email gmail, hotmail ou outlook"))
+		return
+	}
+
 	token, err := UsersCase.Login(usuario.Email, usuario.Senha)
 
 	if err != nil {
@@ -86,6 +96,11 @@ func ControllerCriarAcademia(response http.ResponseWriter, request *http.Request
 		return
 	}
 
+	if !CnpjValido(academia_dto.CNPJ) {
+		BadRequest(response, errors.New("CNPJ invalido"))
+		return
+	}
+
 	errw := UsersCase.CriarAcademia(academia_dto.CNPJ, academia_dto.Nome, id_usuario)
 
 	if errw != nil {
@@ -103,14 +118,14 @@ func ControllerGerarConvites(response http.ResponseWriter, request *http.Request
 		return
 	}
 
-	err = UsersCase.GerarConvite(id_usuario)
+	convite, err := UsersCase.GerarConvite(id_usuario)
 
 	if err != nil {
 		BadRequest(response, err)
 		return
 	}
 
-	Status200(response, "Convite criado")
+	Status200(response, convite.ChaveConvite)
 
 }
 

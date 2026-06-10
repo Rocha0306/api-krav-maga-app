@@ -87,8 +87,8 @@ func MapearAula(conteudo string, id_academia string, id_instrutor string, data_a
 func MapearPresenca(id_aluno string, id_aula string) *entities.Presencas {
 	return &entities.Presencas{
 		IDPresenca: GerarId(),
-		IDAluno:    id_aluno,
-		IDAula:     id_aula,
+		AlunoID:    id_aluno,
+		AulaID:     id_aula,
 		CheckinEm:  time.Now(),
 	}
 }
@@ -116,8 +116,8 @@ func MapearProduto(nome string, preco float64, tamanho string, quantidade int, i
 func MapearInteresse(id_aluno string, id_produto string, quantidade int) *entities.Interesses {
 	return &entities.Interesses{
 		IDInteresse: GerarId(),
-		IDAluno:     id_aluno,
-		IDProduto:   id_produto,
+		AlunoID:     id_aluno,
+		ProdutoID:   id_produto,
 		Quantidade:  quantidade,
 	}
 }
@@ -125,7 +125,7 @@ func MapearInteresse(id_aluno string, id_produto string, quantidade int) *entiti
 func MapearPagamento(id_aluno string, id_payment_intent string, valor_centavos int64) *entities.Pagamentos {
 	return &entities.Pagamentos{
 		IDPagamento:     GerarId(),
-		IDAluno:         id_aluno,
+		AlunoID:         id_aluno,
 		ValorCentavos:   valor_centavos,
 		Status:          "pendente",
 		IDPaymentIntent: id_payment_intent,

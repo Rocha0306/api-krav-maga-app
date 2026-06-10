@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -17,26 +18,34 @@ import (
 */
 func PrepararUsuario(cpf string, cep string, email string, senha string) error {
 
-	if !InterfaceAdapters.DominioEmailValido(email) {
-		return errors.New("use um email gmail, hotmail ou outlook")
-	}
-
 	if Repository.Exists[entities.Usuarios]("email", email) {
 		return errors.New("Usuario ja cadastrado")
 	}
 
-	err, resposta_api_cpf := InterfaceAdapters.CpfApi(cpf)
-	if err != nil {
-		return err
-	}
+	var wg sync.WaitGroup
+	var err_cpf, err_cep error
+	var resposta_api_cpf InterfaceAdapters.CpfApiResponse
+	var resposta_api_cep InterfaceAdapters.CepApiResponse
 
-	err, resposta_api_cep := InterfaceAdapters.CepApi(cep)
-	if err != nil {
-		return err
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		err_cpf, resposta_api_cpf = InterfaceAdapters.CpfApi(cpf)
+	}()
+	go func() {
+		defer wg.Done()
+		err_cep, resposta_api_cep = InterfaceAdapters.CepApi(cep)
+	}()
+	wg.Wait()
+
+	if err_cpf != nil {
+		return err_cpf
+	}
+	if err_cep != nil {
+		return err_cep
 	}
 
 	entidade_final := InterfaceAdapters.MapearUsuario(email, senha, resposta_api_cpf, resposta_api_cep)
-	Repository.Inserir(&entidade_final.Endereco)
 	numero_auth := strconv.Itoa(InterfaceAdapters.GerarNumeroAuth())
 	InterfaceAdapters.SalvarUsuarioCache(numero_auth, *entidade_final)
 	InterfaceAdapters.EnviarEmail(fmt.Sprintf("Codigo de Autenticacao: %s", numero_auth), []string{entidade_final.Email})
@@ -59,14 +68,9 @@ func CriarUsuario(codigo_chave string) error {
 }
 
 func Login(email string, senha string) (string, error) {
-	if !InterfaceAdapters.DominioEmailValido(email) {
-		return "", errors.New("use um email gmail, hotmail ou outlook")
-	}
-
 	usuario := Repository.SelectWhere[entities.Usuarios]("email", email)
-	senha_hash := InterfaceAdapters.HashSenha(senha)
 
-	if usuario.Email != email && usuario.Senha != senha_hash {
+	if usuario.Email != email || !InterfaceAdapters.ComparaSenhaHash(usuario.Senha, senha) {
 		return "", errors.New("Aluno nao existe no sistema")
 	}
 
@@ -81,15 +85,15 @@ func CriarAcademia(cnpj string, nome_academia string, id_usuario string) error {
 	return nil
 }
 
-func GerarConvite(id_usuario string) error {
+func GerarConvite(id_usuario string) (entities.Convites, error) {
 	if !Repository.Exists[entities.Professores]("id_usuario_professor", id_usuario) {
-		return errors.New("Voce nao pode criar convites ja que nao eh professor")
+		return entities.Convites{}, errors.New("Voce nao pode criar convites ja que nao eh professor")
 	}
 
 	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	entidade_convite := InterfaceAdapters.MapearConvite(professor.IDAcademiaProfessor)
 	Repository.Inserir(entidade_convite)
-	return nil
+	return *entidade_convite, nil
 }
 
 func MostrarConvites(id_usuario string) (entities.Convites, error) {

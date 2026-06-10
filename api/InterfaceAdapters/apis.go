@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // 450 requisicoes por mes
@@ -96,7 +97,7 @@ func StripeCriarPagamento(valor_centavos int64, descricao string) (StripePayment
 func CpfApi(cpf string) (error, CpfApiResponse) {
 	var private_response_desserialized CpfApiResponse
 	url := fmt.Sprintf("https://api.cpfhub.io/cpf/%s", cpf)
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 	for i := 0; i < 9; i++ {
 		request, err := http.NewRequest("GET", url, nil)
 		if err == nil {
@@ -106,6 +107,10 @@ func CpfApi(cpf string) (error, CpfApiResponse) {
 		}
 
 		raw_response, err := client.Do(request)
+
+		if err != nil {
+			continue
+		}
 
 		if raw_response.StatusCode == 400 || raw_response.StatusCode == 422 {
 			return errors.New("CPF invalido"), private_response_desserialized
@@ -131,7 +136,7 @@ func CepApi(cep string) (error, CepApiResponse) {
 
 	request, _ := http.NewRequest("GET", url, nil)
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	response, err := client.Do(request)
 
