@@ -288,7 +288,7 @@ func ControllerRegistrarPresenca(response http.ResponseWriter, request *http.Req
 		return
 	}
 
-	if err := UsersCase.RegistrarPresenca(id_usuario, presenca_dto.IDAula); err != nil {
+	if err := UsersCase.RegistrarPresenca(id_usuario, presenca_dto.IDAula, presenca_dto.Latitude, presenca_dto.Longitude); err != nil {
 		BadRequest(response, err)
 		return
 	}
@@ -340,6 +340,151 @@ func ControllerCriarInstrutor(response http.ResponseWriter, request *http.Reques
 
 	Status200(response, "Instrutor criado com sucesso")
 
+}
+
+func ControllerCriarProduto(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	dto := Desserializar[CriarProdutoDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.CriarProduto(id_usuario, dto.Nome, dto.Preco, dto.Tamanho, dto.Quantidade); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Produto criado com sucesso")
+}
+
+func ControllerAtualizarProduto(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	dto := Desserializar[AtualizarProdutoDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.AtualizarProduto(id_usuario, dto.IDProduto, dto.Nome, dto.Preco, dto.Tamanho, dto.Quantidade); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Produto atualizado com sucesso")
+}
+
+func ControllerDeletarProduto(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	dto := Desserializar[DeletarProdutoDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.DeletarProduto(id_usuario, dto.IDProduto); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Produto removido com sucesso")
+}
+
+func ControllerListarCatalogo(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	produtos, err := UsersCase.ListarCatalogo(id_usuario)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, MapearProdutos(produtos))
+}
+
+func ControllerSinalizarInteresse(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	dto := Desserializar[SinalizarInteresseDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.SinalizarInteresse(id_usuario, dto.IDProduto, dto.Quantidade); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Interesse sinalizado com sucesso")
+}
+
+func ControllerRegistrarLocalizacaoAcademia(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	localizacao_dto := Desserializar[LocalizacaoAcademiaDTO](request)
+	error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(localizacao_dto)
+	if error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.RegistrarLocalizacaoAcademia(id_usuario, localizacao_dto.Latitude, localizacao_dto.Longitude); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Localizacao da academia registrada com sucesso")
+}
+
+func ControllerRealizarPagamento(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	pagamento_dto := Desserializar[PagamentoDTO](request)
+	error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(pagamento_dto)
+	if error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	id_pagamento, client_secret, err := UsersCase.RealizarPagamento(id_usuario, pagamento_dto.ValorCentavos)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, RespostaPagamentoDTO{IDPagamento: id_pagamento, ClientSecret: client_secret})
 }
 
 func ControllerListarAulasDoDia(response http.ResponseWriter, request *http.Request) {

@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
 // 450 requisicoes por mes
@@ -48,6 +51,48 @@ type CepApiResponse struct {
 type CnpjApiResponse struct {
 }
 
+const stripe_secret_key = "sk_test_sua_chave_stripe"
+
+type StripePaymentIntentResponse struct {
+	ID           string `json:"id"`
+	ClientSecret string `json:"client_secret"`
+	Status       string `json:"status"`
+	Amount       int64  `json:"amount"`
+	Currency     string `json:"currency"`
+}
+
+func StripeCriarPagamento(valor_centavos int64, descricao string) (StripePaymentIntentResponse, error) {
+	var resposta StripePaymentIntentResponse
+
+	dados := url.Values{}
+	dados.Set("amount", strconv.FormatInt(valor_centavos, 10))
+	dados.Set("currency", "brl")
+	dados.Set("description", descricao)
+	dados.Add("payment_method_types[]", "card")
+	dados.Add("payment_method_types[]", "pix")
+
+	request, err := http.NewRequest("POST", "https://api.stripe.com/v1/payment_intents", strings.NewReader(dados.Encode()))
+	if err != nil {
+		return resposta, errors.New("erro ao preparar pagamento")
+	}
+	request.SetBasicAuth(stripe_secret_key, "")
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return resposta, errors.New("erro ao conectar com a Stripe")
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return resposta, errors.New("erro ao criar pagamento na Stripe")
+	}
+
+	json.NewDecoder(response.Body).Decode(&resposta)
+	return resposta, nil
+}
+
 func CpfApi(cpf string) (error, CpfApiResponse) {
 	var private_response_desserialized CpfApiResponse
 	url := fmt.Sprintf("https://api.cpfhub.io/cpf/%s", cpf)
@@ -62,7 +107,7 @@ func CpfApi(cpf string) (error, CpfApiResponse) {
 
 		raw_response, err := client.Do(request)
 
-		if raw_response.StatusCode == 400 {
+		if raw_response.StatusCode == 400 || raw_response.StatusCode == 422 {
 			return errors.New("CPF invalido"), private_response_desserialized
 		}
 
@@ -96,6 +141,10 @@ func CepApi(cep string) (error, CepApiResponse) {
 	}
 
 	json.NewDecoder(response.Body).Decode(&response_desserialized)
+
+	if response_desserialized.CEP == "" {
+		return errors.New("CEP Invalido"), response_desserialized
+	}
 
 	return nil, response_desserialized
 

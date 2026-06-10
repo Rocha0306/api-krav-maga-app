@@ -12,16 +12,16 @@ import (
 
 func abrirRedis() *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:     "redis-15478.crce296.us-east-1-6.ec2.cloud.redislabs.com:15478",
+		Addr:     "enchanting-place-reaction-20529.db.redis.io:12800",
 		Username: "default",
-		Password: "QVnLZwuKjLiVDme0NtVjMnfP3cVdgqny",
+		Password: "dSzsiTMprSKooLGEN8LDpbitcalCdf9y",
 		DB:       0,
 	})
 }
 
 func SalvarUsuarioCache(codigo_auth string, usuario entities.Usuarios) error {
 	bytes, _ := json.Marshal(usuario)
-	return abrirRedis().Set(context.Background(), codigo_auth, bytes, 15*time.Minute).Err()
+	return abrirRedis().Set(context.Background(), codigo_auth, bytes, 2*time.Minute).Err()
 }
 
 func PegarUsuarioCache(chave string) (entities.Usuarios, error) {

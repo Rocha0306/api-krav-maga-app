@@ -15,13 +15,12 @@ const senhaBanco string = "lorenzo05*"
 const nome_banco string = "KRAVMAGAAPP"
 
 func connect() *gorm.DB {
-	dsn := "root:lorenzo05*@tcp(localhost)/KRAVMAGAAPP?parseTime=True"
+	dsn := "root:Lorenzo05*@tcp(localhost)/KRAVMAGAAPP?parseTime=True"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Print(err)
 	}
 	return db
-
 }
 
 func Inserir[T any](entidade *T) {
@@ -92,4 +91,23 @@ func Exists[T any](campo string, valor string) bool {
 	var contagem int64
 	connect().Model(&modelo).Where(campo+" = ?", valor).Count(&contagem)
 	return contagem > 0
+}
+
+func ExistsTwo[T any](campo1 string, valor1 string, campo2 string, valor2 string) bool {
+	var modelo T
+	var contagem int64
+	connect().Model(&modelo).Where(campo1+" = ? AND "+campo2+" = ?", valor1, valor2).Count(&contagem)
+	return contagem > 0
+}
+
+func UpdateLocationGym(id_academia string, latitude float64, longitude float64) {
+	connect().Model(&entities.Academias{}).
+		Where("ID = ?", id_academia).
+		Updates(map[string]any{"latitude": latitude, "longitude": longitude})
+}
+
+func UpdateProduct(id_produto string, nome string, preco float64, tamanho string, quantidade int) {
+	connect().Model(&entities.Produtos{}).
+		Where("id_produto = ?", id_produto).
+		Updates(map[string]any{"nome": nome, "preco": preco, "tamanho": tamanho, "quantidade": quantidade})
 }

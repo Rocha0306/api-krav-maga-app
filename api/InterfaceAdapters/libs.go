@@ -2,7 +2,9 @@ package InterfaceAdapters
 
 import (
 	"errors"
+	"math"
 	"math/rand/v2"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -90,6 +92,24 @@ func EnviarEmail(conteudo string, para []string) error {
 }
 
 func DateTimeNow() time.Time {
-	date_time_now, _ := time.Parse("2026-06-07", time.Now().String())
+	layout := "2006-01-02 15:04:05"
+	date_time_now, _ := time.Parse(layout, time.Now().Format(layout))
 	return date_time_now
+}
+
+var regexDominioEmail = regexp.MustCompile(`@(gmail|hotmail|outlook)\.com$`)
+
+func DominioEmailValido(email string) bool {
+	return regexDominioEmail.MatchString(email)
+}
+
+func CalcularDistanciaMetros(lat1, lon1, lat2, lon2 float64) float64 {
+	const raioTerra = 6371000.0
+	lat1Rad := lat1 * math.Pi / 180
+	lat2Rad := lat2 * math.Pi / 180
+	deltaLat := (lat2 - lat1) * math.Pi / 180
+	deltaLon := (lon2 - lon1) * math.Pi / 180
+	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) +
+		math.Cos(lat1Rad)*math.Cos(lat2Rad)*math.Sin(deltaLon/2)*math.Sin(deltaLon/2)
+	return raioTerra * 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 }

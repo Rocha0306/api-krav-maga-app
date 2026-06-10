@@ -5,12 +5,12 @@ import (
 )
 
 type LoginDTO struct {
-	Email string `json:"email" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
 	Senha string `json:"senha" validate:"required"`
 }
 
 type UsuarioDTO struct {
-	Email string `json:"email" validate:"required,max=100"`
+	Email string `json:"email" validate:"required,max=100,email"`
 	Senha string `json:"senha" validate:"required,max=20"`
 	CPF   string `json:"cpf"   validate:"required,len=11"`
 	CEP   string `json:"cep"   validate:"required,len=8"`
@@ -58,7 +58,14 @@ type CriarAulaDTO struct {
 }
 
 type PresencaDTO struct {
-	IDAula string `json:"id_aula" validate:"required,max=100"`
+	IDAula    string  `json:"id_aula"    validate:"required,max=100"`
+	Latitude  float64 `json:"latitude"   validate:"required"`
+	Longitude float64 `json:"longitude"  validate:"required"`
+}
+
+type LocalizacaoAcademiaDTO struct {
+	Latitude  float64 `json:"latitude"  validate:"required"`
+	Longitude float64 `json:"longitude" validate:"required"`
 }
 
 type ContagemPresencaDTO struct {
@@ -82,4 +89,45 @@ type AulaDTO struct {
 	DataAula    time.Time `json:"data_aula"`
 	Conteudo    string    `json:"conteudo"`
 	IDInstrutor string    `json:"id_instrutor"`
+}
+
+type CriarProdutoDTO struct {
+	Nome       string  `json:"nome"       validate:"required,max=100"`
+	Preco      float64 `json:"preco"      validate:"required"`
+	Tamanho    string  `json:"tamanho"    validate:"required,max=20"`
+	Quantidade int     `json:"quantidade" validate:"required,min=1"`
+}
+
+type AtualizarProdutoDTO struct {
+	IDProduto  string  `json:"id_produto"  validate:"required,max=100"`
+	Nome       string  `json:"nome"        validate:"required,max=100"`
+	Preco      float64 `json:"preco"       validate:"required"`
+	Tamanho    string  `json:"tamanho"     validate:"required,max=20"`
+	Quantidade int     `json:"quantidade"  validate:"required,min=1"`
+}
+
+type DeletarProdutoDTO struct {
+	IDProduto string `json:"id_produto" validate:"required,max=100"`
+}
+
+type ProdutoDTO struct {
+	IDProduto  string  `json:"id_produto"`
+	Nome       string  `json:"nome"`
+	Preco      float64 `json:"preco"`
+	Tamanho    string  `json:"tamanho"`
+	Quantidade int     `json:"quantidade"`
+}
+
+type SinalizarInteresseDTO struct {
+	IDProduto  string `json:"id_produto"  validate:"required,max=100"`
+	Quantidade int    `json:"quantidade"  validate:"required,min=1"`
+}
+
+type PagamentoDTO struct {
+	ValorCentavos int64 `json:"valor_centavos" validate:"required,min=100"`
+}
+
+type RespostaPagamentoDTO struct {
+	IDPagamento  string `json:"id_pagamento"`
+	ClientSecret string `json:"client_secret"`
 }

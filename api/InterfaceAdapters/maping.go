@@ -102,6 +102,37 @@ func MapearInstrutor(id_usuario string, id_academia string) *entities.Instrutore
 	}
 }
 
+func MapearProduto(nome string, preco float64, tamanho string, quantidade int, id_academia string) *entities.Produtos {
+	return &entities.Produtos{
+		IDProduto:  GerarId(),
+		Nome:       nome,
+		Preco:      preco,
+		Tamanho:    tamanho,
+		Quantidade: quantidade,
+		IDAcademia: id_academia,
+	}
+}
+
+func MapearInteresse(id_aluno string, id_produto string, quantidade int) *entities.Interesses {
+	return &entities.Interesses{
+		IDInteresse: GerarId(),
+		IDAluno:     id_aluno,
+		IDProduto:   id_produto,
+		Quantidade:  quantidade,
+	}
+}
+
+func MapearPagamento(id_aluno string, id_payment_intent string, valor_centavos int64) *entities.Pagamentos {
+	return &entities.Pagamentos{
+		IDPagamento:     GerarId(),
+		IDAluno:         id_aluno,
+		ValorCentavos:   valor_centavos,
+		Status:          "pendente",
+		IDPaymentIntent: id_payment_intent,
+		CriadoEm:        time.Now(),
+	}
+}
+
 // Monta o aluno que entra na academia quando o professor aprova a solicitacao.
 func MapearAlunoAprovado(id_usuario string, id_academia string) entities.Alunos {
 	return entities.Alunos{

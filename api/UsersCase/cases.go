@@ -17,6 +17,10 @@ import (
 */
 func PrepararUsuario(cpf string, cep string, email string, senha string) error {
 
+	if !InterfaceAdapters.DominioEmailValido(email) {
+		return errors.New("use um email gmail, hotmail ou outlook")
+	}
+
 	if Repository.Exists[entities.Usuarios]("email", email) {
 		return errors.New("Usuario ja cadastrado")
 	}
@@ -55,6 +59,10 @@ func CriarUsuario(codigo_chave string) error {
 }
 
 func Login(email string, senha string) (string, error) {
+	if !InterfaceAdapters.DominioEmailValido(email) {
+		return "", errors.New("use um email gmail, hotmail ou outlook")
+	}
+
 	usuario := Repository.SelectWhere[entities.Usuarios]("email", email)
 	senha_hash := InterfaceAdapters.HashSenha(senha)
 
@@ -192,7 +200,7 @@ func CriarAula(id_usuario string, conteudo string, data_aula string) error {
 	return nil
 }
 
-func RegistrarPresenca(id_usuario string, id_aula string) error {
+func RegistrarPresenca(id_usuario string, id_aula string, latitude float64, longitude float64) error {
 	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
 	if aluno.IDAluno == "" {
 		return errors.New("voce nao eh aluno de nenhuma academia")
@@ -207,8 +215,32 @@ func RegistrarPresenca(id_usuario string, id_aula string) error {
 		return errors.New("essa aula nao eh da sua academia")
 	}
 
+	if Repository.ExistsTwo[entities.Presencas]("id_aluno", aluno.IDAluno, "id_aula", id_aula) {
+		return errors.New("presenca ja registrada para essa aula")
+	}
+
+	academia := Repository.SelectWhere[entities.Academias]("ID", aluno.IDAcademiaAluno)
+	if academia.Latitude == nil || academia.Longitude == nil {
+		return errors.New("localizacao da academia ainda nao foi cadastrada pelo professor")
+	}
+
+	distancia := InterfaceAdapters.CalcularDistanciaMetros(latitude, longitude, *academia.Latitude, *academia.Longitude)
+	if distancia >= 100 {
+		return errors.New("voce esta longe demais da academia para registrar presenca")
+	}
+
 	presenca := InterfaceAdapters.MapearPresenca(aluno.IDAluno, id_aula)
 	Repository.Inserir(presenca)
+	return nil
+}
+
+func RegistrarLocalizacaoAcademia(id_usuario string, latitude float64, longitude float64) error {
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	if professor.IDProfessor == "" {
+		return errors.New("voce nao eh professor de nenhuma academia")
+	}
+
+	Repository.UpdateLocationGym(professor.IDAcademiaProfessor, latitude, longitude)
 	return nil
 }
 
@@ -234,6 +266,117 @@ func CriarInstrutor(id_usuario string, id_aluno string) error {
 	instrutor := InterfaceAdapters.MapearInstrutor(aluno.IDUsuarioAluno, aluno.IDAcademiaAluno)
 	Repository.Inserir(instrutor)
 	return nil
+}
+
+func CriarProduto(id_usuario string, nome string, preco float64, tamanho string, quantidade int) error {
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	if professor.IDProfessor == "" {
+		return errors.New("voce nao eh professor de nenhuma academia")
+	}
+
+	produto := InterfaceAdapters.MapearProduto(nome, preco, tamanho, quantidade, professor.IDAcademiaProfessor)
+	Repository.Inserir(produto)
+	return nil
+}
+
+func AtualizarProduto(id_usuario string, id_produto string, nome string, preco float64, tamanho string, quantidade int) error {
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	if professor.IDProfessor == "" {
+		return errors.New("voce nao eh professor de nenhuma academia")
+	}
+
+	produto := Repository.SelectWhere[entities.Produtos]("id_produto", id_produto)
+	if produto.IDProduto == "" {
+		return errors.New("produto nao encontrado")
+	}
+
+	if produto.IDAcademia != professor.IDAcademiaProfessor {
+		return errors.New("esse produto nao pertence a sua academia")
+	}
+
+	Repository.UpdateProduct(id_produto, nome, preco, tamanho, quantidade)
+	return nil
+}
+
+func DeletarProduto(id_usuario string, id_produto string) error {
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	if professor.IDProfessor == "" {
+		return errors.New("voce nao eh professor de nenhuma academia")
+	}
+
+	produto := Repository.SelectWhere[entities.Produtos]("id_produto", id_produto)
+	if produto.IDProduto == "" {
+		return errors.New("produto nao encontrado")
+	}
+
+	if produto.IDAcademia != professor.IDAcademiaProfessor {
+		return errors.New("esse produto nao pertence a sua academia")
+	}
+
+	Repository.Delete[entities.Produtos]("id_produto", id_produto)
+	return nil
+}
+
+func ListarCatalogo(id_usuario string) ([]entities.Produtos, error) {
+	id_academia := ""
+
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	if professor.IDProfessor != "" {
+		id_academia = professor.IDAcademiaProfessor
+	}
+
+	if id_academia == "" {
+		aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
+		if aluno.IDAluno != "" {
+			id_academia = aluno.IDAcademiaAluno
+		}
+	}
+
+	if id_academia == "" {
+		return nil, errors.New("voce nao pertence a nenhuma academia")
+	}
+
+	return Repository.SelectWhereList[entities.Produtos]("id_academia", id_academia), nil
+}
+
+func SinalizarInteresse(id_usuario string, id_produto string, quantidade int) error {
+	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
+	if aluno.IDAluno == "" {
+		return errors.New("voce nao eh aluno de nenhuma academia")
+	}
+
+	produto := Repository.SelectWhere[entities.Produtos]("id_produto", id_produto)
+	if produto.IDProduto == "" {
+		return errors.New("produto nao encontrado")
+	}
+
+	if produto.IDAcademia != aluno.IDAcademiaAluno {
+		return errors.New("esse produto nao pertence a sua academia")
+	}
+
+	interesse := InterfaceAdapters.MapearInteresse(aluno.IDAluno, id_produto, quantidade)
+	Repository.Inserir(interesse)
+	return nil
+}
+
+func RealizarPagamento(id_usuario string, valor_centavos int64) (string, string, error) {
+	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
+	if aluno.IDAluno == "" {
+		return "", "", errors.New("voce nao eh aluno de nenhuma academia")
+	}
+
+	usuario := Repository.SelectWhere[entities.Usuarios]("ID", id_usuario)
+
+	descricao := fmt.Sprintf("Mensalidade academia - aluno %s", usuario.Nome)
+	resposta_stripe, err := InterfaceAdapters.StripeCriarPagamento(valor_centavos, descricao)
+	if err != nil {
+		return "", "", err
+	}
+
+	pagamento := InterfaceAdapters.MapearPagamento(aluno.IDAluno, resposta_stripe.ID, valor_centavos)
+	Repository.Inserir(pagamento)
+
+	return pagamento.IDPagamento, resposta_stripe.ClientSecret, nil
 }
 
 func ListarAulasDoDia(id_usuario string) ([]entities.Aulas, error) {

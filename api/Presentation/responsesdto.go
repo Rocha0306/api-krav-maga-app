@@ -28,6 +28,20 @@ func MapearAlunos(alunos []entities.Alunos) []AlunoDTO {
 	return resultado
 }
 
+func MapearProdutos(produtos []entities.Produtos) []ProdutoDTO {
+	resultado := make([]ProdutoDTO, 0, len(produtos))
+	for _, p := range produtos {
+		resultado = append(resultado, ProdutoDTO{
+			IDProduto:  p.IDProduto,
+			Nome:       p.Nome,
+			Preco:      p.Preco,
+			Tamanho:    p.Tamanho,
+			Quantidade: p.Quantidade,
+		})
+	}
+	return resultado
+}
+
 func MapearSolicitacoes(solicitacoes []entities.SolicitacoesConvite) []SolicitacaoEntradaDTO {
 	resultado := make([]SolicitacaoEntradaDTO, 0, len(solicitacoes))
 	for _, solicitacao := range solicitacoes {
