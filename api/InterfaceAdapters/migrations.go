@@ -8,7 +8,7 @@ import (
 )
 
 func Migrations() {
-	dsn := "root:Lorenzo05*@tcp(localhost)/KRAVMAGAAPP?parseTime=True"
+	dsn := ConnectionStringMySQL()
 	db, _ := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	db.AutoMigrate(
 		&entities.Endereco{},
