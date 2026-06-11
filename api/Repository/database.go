@@ -12,7 +12,7 @@ import (
 var db *gorm.DB
 
 func init() {
-	dsn := InterfaceAdapters.ConnectionStringBanco()
+	dsn := InterfaceAdapters.ConnectionStringMySQL()
 	conexao, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)

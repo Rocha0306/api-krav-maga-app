@@ -13,12 +13,12 @@ func PegaVariavelAmbiente(chave string) string {
 	return valor
 }
 
-func ConnectionStringBanco() string {
-	return PegaVariavelAmbiente("DB_PASS")
+func ConnectionStringMySQL() string {
+	return PegaVariavelAmbiente("DB_MYSQL")
 }
 
 func ConnectionStringMongo() string {
-	return PegaVariavelAmbiente("DB_URL")
+	return PegaVariavelAmbiente("DB_MONGODB")
 }
 
 func ConnectionStringRedis() string {
