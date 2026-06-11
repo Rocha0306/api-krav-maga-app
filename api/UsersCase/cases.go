@@ -84,7 +84,7 @@ func Login(email string, senha string) (string, error) {
 	return InterfaceAdapters.GerarTokenJwt(usuario.ID), nil
 }
 
-func PerfilUsuario(id_usuario string) (entities.Usuarios, string) {
+func PerfilUsuario(id_usuario string) (entities.Usuarios, string, string) {
 	usuario := Repository.SelectWhere[entities.Usuarios]("ID", id_usuario)
 
 	role := "student"
@@ -92,7 +92,40 @@ func PerfilUsuario(id_usuario string) (entities.Usuarios, string) {
 		role = "teacher"
 	}
 
-	return *usuario, role
+	faixa := ""
+	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
+	if aluno.IDAluno != "" {
+		faixa = aluno.Faixa
+	}
+
+	return *usuario, role, faixa
+}
+
+func EsqueciSenha(email string) error {
+	usuario := Repository.SelectWhere[entities.Usuarios]("email", email)
+	if usuario.ID == "" {
+		return nil
+	}
+
+	if InterfaceAdapters.ThrottleAtingido("reset-throttle:"+email, 2*time.Minute) {
+		return nil
+	}
+
+	codigo := strconv.Itoa(InterfaceAdapters.GerarNumeroAuth())
+	InterfaceAdapters.SalvarValorCache("reset:"+codigo, usuario.ID)
+	InterfaceAdapters.EnviarEmail(fmt.Sprintf("Codigo para redefinir sua senha: %s", codigo), []string{usuario.Email})
+	return nil
+}
+
+func RedefinirSenha(codigo string, nova_senha string) error {
+	id_usuario, err := InterfaceAdapters.PegarValorCache("reset:" + codigo)
+	if err != nil {
+		return errors.New("codigo invalido ou expirado")
+	}
+
+	Repository.UpdateSenhaUsuario(id_usuario, InterfaceAdapters.HashSenha(nova_senha))
+	InterfaceAdapters.RemoverValorCache("reset:" + codigo)
+	return nil
 }
 
 func CriarAcademia(cnpj string, nome_academia string, id_usuario string) error {

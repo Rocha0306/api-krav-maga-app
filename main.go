@@ -10,8 +10,11 @@ func main() {
 
 	InterfaceAdapters.Migrations()
 	http.HandleFunc("POST /Users/Auth", Presentation.ControllerLogin)
+	http.HandleFunc("GET /Users/Me", Presentation.ControllerPerfilUsuario)
 	http.HandleFunc("POST /Users/Registration", Presentation.ControllerCadastro)
 	http.HandleFunc("POST /Users/Registration/Confirm", Presentation.ControllerCadastroConfirmar)
+	http.HandleFunc("POST /Users/Password/Forgot", Presentation.ControllerEsqueciSenha)
+	http.HandleFunc("POST /Users/Password/Reset", Presentation.ControllerRedefinirSenha)
 	http.HandleFunc("POST /Gyms/Creation", Presentation.ControllerCriarAcademia)
 	http.HandleFunc("POST /Gyms/Invites/Creation", Presentation.ControllerGerarConvites)
 	http.HandleFunc("GET /Gyms/Invites/List", Presentation.ControllerMostrarConvites)

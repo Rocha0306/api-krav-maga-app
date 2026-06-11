@@ -39,3 +39,20 @@ func PegarUsuarioCache(chave string) (entities.Usuarios, error) {
 func RemoverValorCache(chave string) {
 	abrirRedis().Del(context.Background(), chave)
 }
+
+func SalvarValorCache(chave string, valor string) error {
+	return abrirRedis().Set(context.Background(), chave, valor, 10*time.Minute).Err()
+}
+
+func PegarValorCache(chave string) (string, error) {
+	val, err := abrirRedis().Get(context.Background(), chave).Result()
+	if err == redis.Nil {
+		return "", errors.New("conteudo nao encontrado em cache")
+	}
+	return val, err
+}
+
+func ThrottleAtingido(chave string, janela time.Duration) bool {
+	ok, _ := abrirRedis().SetNX(context.Background(), chave, "1", janela).Result()
+	return !ok
+}

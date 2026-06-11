@@ -20,6 +20,27 @@ type CodigoUsuarioDTO struct {
 	CodigoAuth string `json:"codigo_auth" validate:"required,max=6"`
 }
 
+type EsqueciSenhaDTO struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type RedefinirSenhaDTO struct {
+	CodigoAuth string `json:"codigo_auth" validate:"required,max=6"`
+	NovaSenha  string `json:"nova_senha" validate:"required,max=20"`
+}
+
+type PerfilUsuarioDTO struct {
+	ID             string    `json:"id"`
+	Nome           string    `json:"name"`
+	Email          string    `json:"email"`
+	Genero         string    `json:"genero"`
+	CPF            string    `json:"cpf"`
+	DataNascimento time.Time `json:"data_nascimento"`
+	EnderecoID     string    `json:"endereco_id"`
+	Role           string    `json:"role"`
+	Faixa          string    `json:"faixa"`
+}
+
 type CodigoConviteDTO struct {
 	ConviteUUID string `json:"convite_uuid" validate:"required,uuid"`
 }

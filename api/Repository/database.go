@@ -137,3 +137,9 @@ func UpdateAlunoFaixa(id_aluno string, faixa string) {
 		Where("id_aluno = ?", id_aluno).
 		Updates(map[string]any{"faixa": faixa})
 }
+
+func UpdateSenhaUsuario(id_usuario string, senha_hash string) {
+	connect().Model(&entities.Usuarios{}).
+		Where("ID = ?", id_usuario).
+		Updates(map[string]any{"senha": senha_hash})
+}

@@ -81,6 +81,59 @@ func ControllerLogin(response http.ResponseWriter, request *http.Request) {
 	Status200(response, token)
 }
 
+func ControllerPerfilUsuario(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	usuario, role, faixa := UsersCase.PerfilUsuario(id_usuario)
+
+	Status200(response, PerfilUsuarioDTO{
+		ID:             usuario.ID,
+		Nome:           usuario.Nome,
+		Email:          usuario.Email,
+		Genero:         usuario.Genero,
+		CPF:            usuario.CPF,
+		DataNascimento: usuario.DataNascimento,
+		EnderecoID:     usuario.EnderecoID,
+		Role:           role,
+		Faixa:          faixa,
+	})
+}
+
+func ControllerEsqueciSenha(response http.ResponseWriter, request *http.Request) {
+	dto := Desserializar[EsqueciSenhaDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.EsqueciSenha(dto.Email); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Se o email existir, enviamos um codigo para redefinir a senha")
+}
+
+func ControllerRedefinirSenha(response http.ResponseWriter, request *http.Request) {
+	dto := Desserializar[RedefinirSenhaDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.RedefinirSenha(dto.CodigoAuth, dto.NovaSenha); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Senha redefinida com sucesso")
+}
+
 func ControllerCriarAcademia(response http.ResponseWriter, request *http.Request) {
 	id_usuario, err := ValidarJwt(*request)
 
