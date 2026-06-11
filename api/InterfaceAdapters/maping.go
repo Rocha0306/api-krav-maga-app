@@ -102,13 +102,14 @@ func MapearInstrutor(id_usuario string, id_academia string) *entities.Instrutore
 	}
 }
 
-func MapearProduto(nome string, preco float64, tamanho string, quantidade int, id_academia string) *entities.Produtos {
+func MapearProduto(nome string, preco float64, tamanho string, quantidade int, imagem_url string, id_academia string) *entities.Produtos {
 	return &entities.Produtos{
 		IDProduto:  GerarId(),
 		Nome:       nome,
 		Preco:      preco,
 		Tamanho:    tamanho,
 		Quantidade: quantidade,
+		ImagemURL:  imagem_url,
 		IDAcademia: id_academia,
 	}
 }

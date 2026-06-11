@@ -134,6 +134,7 @@ type Produtos struct {
 	Preco      float64   `gorm:"column:preco;not null"`
 	Tamanho    string    `gorm:"column:tamanho;type:varchar(20)"`
 	Quantidade int       `gorm:"column:quantidade;not null"`
+	ImagemURL  string    `gorm:"column:imagem_url;type:varchar(500)"`
 	IDAcademia string    `gorm:"column:id_academia"`
 	Academia   Academias `gorm:"foreignKey:IDAcademia;references:ID"`
 }

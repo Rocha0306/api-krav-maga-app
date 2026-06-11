@@ -53,6 +53,7 @@ func MapearProdutos(produtos []entities.Produtos) []ProdutoDTO {
 			Preco:      p.Preco,
 			Tamanho:    p.Tamanho,
 			Quantidade: p.Quantidade,
+			ImagemURL:  p.ImagemURL,
 		})
 	}
 	return resultado

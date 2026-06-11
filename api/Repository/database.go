@@ -122,10 +122,10 @@ func UpdateLocationGym(id_academia string, latitude float64, longitude float64) 
 		Updates(map[string]any{"latitude": latitude, "longitude": longitude})
 }
 
-func UpdateProduct(id_produto string, nome string, preco float64, tamanho string, quantidade int) {
+func UpdateProduct(id_produto string, nome string, preco float64, tamanho string, quantidade int, imagem_url string) {
 	connect().Model(&entities.Produtos{}).
 		Where("id_produto = ?", id_produto).
-		Updates(map[string]any{"nome": nome, "preco": preco, "tamanho": tamanho, "quantidade": quantidade})
+		Updates(map[string]any{"nome": nome, "preco": preco, "tamanho": tamanho, "quantidade": quantidade, "imagem_url": imagem_url})
 }
 
 func UpdateAlunoFaixa(id_aluno string, faixa string) {

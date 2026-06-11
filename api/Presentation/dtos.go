@@ -130,14 +130,16 @@ type CriarProdutoDTO struct {
 	Preco      float64 `json:"preco"      validate:"required,max=5000"`
 	Tamanho    string  `json:"tamanho"    validate:"required,max=20"`
 	Quantidade int     `json:"quantidade" validate:"required,min=1,max=20"`
+	ImagemURL  string  `json:"imagem_url" validate:"omitempty,url,max=500"`
 }
 
 type AtualizarProdutoDTO struct {
 	IDProduto  string  `json:"id_produto"  validate:"required,max=100"`
 	Nome       string  `json:"nome"        validate:"required,max=100"`
-	Preco      float64 `json:"preco"       validate:"required"`
+	Preco      float64 `json:"preco"       validate:"required,max=5000"`
 	Tamanho    string  `json:"tamanho"     validate:"required,max=20"`
-	Quantidade int     `json:"quantidade"  validate:"required,min=1"`
+	Quantidade int     `json:"quantidade"  validate:"required,min=1,max=20"`
+	ImagemURL  string  `json:"imagem_url"  validate:"omitempty,url,max=500"`
 }
 
 type ProdutoDTO struct {
@@ -146,6 +148,7 @@ type ProdutoDTO struct {
 	Preco      float64 `json:"preco"`
 	Tamanho    string  `json:"tamanho"`
 	Quantidade int     `json:"quantidade"`
+	ImagemURL  string  `json:"imagem_url"`
 }
 
 type SinalizarInteresseDTO struct {

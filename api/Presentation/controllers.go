@@ -479,7 +479,7 @@ func ControllerCriarProduto(response http.ResponseWriter, request *http.Request)
 		return
 	}
 
-	if err := UsersCase.CriarProduto(id_usuario, dto.Nome, dto.Preco, dto.Tamanho, dto.Quantidade); err != nil {
+	if err := UsersCase.CriarProduto(id_usuario, dto.Nome, dto.Preco, dto.Tamanho, dto.Quantidade, dto.ImagemURL); err != nil {
 		BadRequest(response, err)
 		return
 	}
@@ -500,7 +500,7 @@ func ControllerAtualizarProduto(response http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	if err := UsersCase.AtualizarProduto(id_usuario, dto.IDProduto, dto.Nome, dto.Preco, dto.Tamanho, dto.Quantidade); err != nil {
+	if err := UsersCase.AtualizarProduto(id_usuario, dto.IDProduto, dto.Nome, dto.Preco, dto.Tamanho, dto.Quantidade, dto.ImagemURL); err != nil {
 		BadRequest(response, err)
 		return
 	}

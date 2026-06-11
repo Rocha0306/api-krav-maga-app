@@ -415,18 +415,18 @@ func CriarInstrutor(id_usuario string, id_aluno string) error {
 	return nil
 }
 
-func CriarProduto(id_usuario string, nome string, preco float64, tamanho string, quantidade int) error {
+func CriarProduto(id_usuario string, nome string, preco float64, tamanho string, quantidade int, imagem_url string) error {
 	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor == "" {
 		return errors.New("voce nao eh professor de nenhuma academia")
 	}
 
-	produto := InterfaceAdapters.MapearProduto(nome, preco, tamanho, quantidade, professor.IDAcademiaProfessor)
+	produto := InterfaceAdapters.MapearProduto(nome, preco, tamanho, quantidade, imagem_url, professor.IDAcademiaProfessor)
 	Repository.Inserir(produto)
 	return nil
 }
 
-func AtualizarProduto(id_usuario string, id_produto string, nome string, preco float64, tamanho string, quantidade int) error {
+func AtualizarProduto(id_usuario string, id_produto string, nome string, preco float64, tamanho string, quantidade int, imagem_url string) error {
 	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor == "" {
 		return errors.New("voce nao eh professor de nenhuma academia")
@@ -441,7 +441,7 @@ func AtualizarProduto(id_usuario string, id_produto string, nome string, preco f
 		return errors.New("esse produto nao pertence a sua academia")
 	}
 
-	Repository.UpdateProduct(id_produto, nome, preco, tamanho, quantidade)
+	Repository.UpdateProduct(id_produto, nome, preco, tamanho, quantidade, imagem_url)
 	return nil
 }
 
