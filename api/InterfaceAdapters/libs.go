@@ -30,7 +30,7 @@ var chave_jwt = []byte(JwtSecret())
 
 func GerarTokenJwt(id_usuario string) string {
 	claims_token := jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(60 * time.Minute)),
 		Audience:  jwt.ClaimStrings{id_usuario},
 	}
 
