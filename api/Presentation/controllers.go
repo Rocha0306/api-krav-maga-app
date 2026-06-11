@@ -349,13 +349,13 @@ func ControllerContarPresencasAluno(response http.ResponseWriter, request *http.
 		return
 	}
 
-	contagem, err := UsersCase.ContarPresencasAluno(id_usuario, id_aluno)
+	presencas, err := UsersCase.ContarPresencasAluno(id_usuario, id_aluno)
 	if err != nil {
 		BadRequest(response, err)
 		return
 	}
 
-	Status200(response, ContagemPresencaDTO{IDAluno: id_aluno, Contagem: contagem})
+	Status200(response, MapearPresencasAluno(id_aluno, presencas))
 
 }
 
@@ -533,6 +533,23 @@ func ControllerRegistrarLocalizacaoAcademia(response http.ResponseWriter, reques
 	}
 
 	Status200(response, "Localizacao da academia registrada com sucesso")
+}
+
+func ControllerLocalizacaoAcademia(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	latitude, longitude, err := UsersCase.LocalizacaoAcademia(id_usuario)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, LocalizacaoAcademiaDTO{Latitude: latitude, Longitude: longitude})
 }
 
 func ControllerRealizarPagamento(response http.ResponseWriter, request *http.Request) {

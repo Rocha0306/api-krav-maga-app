@@ -74,9 +74,15 @@ type LocalizacaoAcademiaDTO struct {
 	Longitude float64 `json:"longitude" validate:"required"`
 }
 
+type PresencaDetalheDTO struct {
+	NomeAula string    `json:"nome_aula"`
+	Data     time.Time `json:"data"`
+}
+
 type ContagemPresencaDTO struct {
-	IDAluno  string `json:"id_aluno"`
-	Contagem int64  `json:"contagem"`
+	IDAluno   string               `json:"id_aluno"`
+	Contagem  int64                `json:"contagem"`
+	Presencas []PresencaDetalheDTO `json:"presencas"`
 }
 
 type AlunoDTO struct {
@@ -100,9 +106,9 @@ type AulaDTO struct {
 
 type CriarProdutoDTO struct {
 	Nome       string  `json:"nome"       validate:"required,max=100"`
-	Preco      float64 `json:"preco"      validate:"required"`
+	Preco      float64 `json:"preco"      validate:"required,max=5000"`
 	Tamanho    string  `json:"tamanho"    validate:"required,max=20"`
-	Quantidade int     `json:"quantidade" validate:"required,min=1"`
+	Quantidade int     `json:"quantidade" validate:"required,min=1,max=20"`
 }
 
 type AtualizarProdutoDTO struct {

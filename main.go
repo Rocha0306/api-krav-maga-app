@@ -29,6 +29,7 @@ func main() {
 	http.HandleFunc("POST /Student/Presence", Presentation.ControllerRegistrarPresenca)
 	http.HandleFunc("GET /Student/Presence/Count", Presentation.ControllerContarPresencasAluno)
 	http.HandleFunc("PUT /Gyms/Location", Presentation.ControllerRegistrarLocalizacaoAcademia)
+	http.HandleFunc("GET /Gyms/Geolocation", Presentation.ControllerLocalizacaoAcademia)
 	http.HandleFunc("POST /Gyms/Catalog/Creation", Presentation.ControllerCriarProduto)
 	http.HandleFunc("PUT /Gyms/Catalog/Update", Presentation.ControllerAtualizarProduto)
 	http.HandleFunc("DELETE /Gyms/Catalog/{id_produto}", Presentation.ControllerDeletarProduto)

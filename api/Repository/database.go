@@ -85,6 +85,15 @@ func SelectDayPresences(id_academia string, inicio time.Time, fim time.Time) []e
 	return resultados
 }
 
+func SelectPresencasComAula(id_aluno string) []entities.Presencas {
+	var resultados []entities.Presencas
+	connect().
+		Joins("Aula").
+		Where("presencas.id_aluno = ?", id_aluno).
+		Find(&resultados)
+	return resultados
+}
+
 func Delete[T any](campo string, valor string) {
 	var modelo T
 	connect().Where(campo+" = ?", valor).Delete(&modelo)

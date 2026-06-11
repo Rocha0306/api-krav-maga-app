@@ -84,6 +84,17 @@ func Login(email string, senha string) (string, error) {
 	return InterfaceAdapters.GerarTokenJwt(usuario.ID), nil
 }
 
+func PerfilUsuario(id_usuario string) (entities.Usuarios, string) {
+	usuario := Repository.SelectWhere[entities.Usuarios]("ID", id_usuario)
+
+	role := "student"
+	if Repository.Exists[entities.Professores]("id_usuario_professor", id_usuario) {
+		role = "teacher"
+	}
+
+	return *usuario, role
+}
+
 func CriarAcademia(cnpj string, nome_academia string, id_usuario string) error {
 	entidade_academia := InterfaceAdapters.MapearAcademia(cnpj, nome_academia)
 	Repository.Inserir(entidade_academia)
@@ -287,22 +298,49 @@ func RegistrarLocalizacaoAcademia(id_usuario string, latitude float64, longitude
 	return nil
 }
 
-func ContarPresencasAluno(id_usuario string, id_aluno string) (int64, error) {
+func LocalizacaoAcademia(id_usuario string) (float64, float64, error) {
+	id_academia := ""
+
+	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
+	if aluno.IDAluno != "" {
+		id_academia = aluno.IDAcademiaAluno
+	}
+
+	if id_academia == "" {
+		professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+		if professor.IDProfessor != "" {
+			id_academia = professor.IDAcademiaProfessor
+		}
+	}
+
+	if id_academia == "" {
+		return 0, 0, errors.New("voce nao pertence a nenhuma academia")
+	}
+
+	academia := Repository.SelectWhere[entities.Academias]("ID", id_academia)
+	if academia.Latitude == nil || academia.Longitude == nil {
+		return 0, 0, errors.New("localizacao da academia ainda nao foi cadastrada")
+	}
+
+	return *academia.Latitude, *academia.Longitude, nil
+}
+
+func ContarPresencasAluno(id_usuario string, id_aluno string) ([]entities.Presencas, error) {
 	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
 	if professor.IDProfessor == "" {
-		return 0, errors.New("voce nao pode ver presencas ja que nao eh um professor")
+		return nil, errors.New("voce nao pode ver presencas ja que nao eh um professor")
 	}
 
 	aluno := Repository.SelectWhere[entities.Alunos]("id_aluno", id_aluno)
 	if aluno.IDAluno == "" {
-		return 0, errors.New("aluno nao encontrado")
+		return nil, errors.New("aluno nao encontrado")
 	}
 
 	if aluno.IDAcademiaAluno != professor.IDAcademiaProfessor {
-		return 0, errors.New("esse aluno nao pertence a sua academia")
+		return nil, errors.New("esse aluno nao pertence a sua academia")
 	}
 
-	return Repository.Count[entities.Presencas]("id_aluno", id_aluno), nil
+	return Repository.SelectPresencasComAula(id_aluno), nil
 }
 
 func AtualizarFaixaAluno(id_usuario string, id_aluno string, faixa string) error {

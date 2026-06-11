@@ -2,6 +2,21 @@ package Presentation
 
 import entities "api-back-end/api/Entities"
 
+func MapearPresencasAluno(id_aluno string, presencas []entities.Presencas) ContagemPresencaDTO {
+	detalhes := make([]PresencaDetalheDTO, 0, len(presencas))
+	for _, p := range presencas {
+		detalhes = append(detalhes, PresencaDetalheDTO{
+			NomeAula: p.Aula.Conteudo,
+			Data:     p.CheckinEm,
+		})
+	}
+	return ContagemPresencaDTO{
+		IDAluno:   id_aluno,
+		Contagem:  int64(len(presencas)),
+		Presencas: detalhes,
+	}
+}
+
 func MapearAulas(aulas []entities.Aulas) []AulaDTO {
 	resultado := make([]AulaDTO, 0, len(aulas))
 	for _, aula := range aulas {
