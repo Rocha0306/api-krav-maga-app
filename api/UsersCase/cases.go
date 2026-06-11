@@ -55,7 +55,13 @@ func PrepararUsuario(cpf string, cep string, email string, senha string) error {
 
 	numero_auth := strconv.Itoa(InterfaceAdapters.GerarNumeroAuth())
 	InterfaceAdapters.SalvarUsuarioCache(numero_auth, *entidade_final)
-	InterfaceAdapters.EnviarEmail(fmt.Sprintf("Codigo de Autenticacao: %s", numero_auth), []string{entidade_final.Email})
+	err := InterfaceAdapters.EnviarEmail(fmt.Sprintf("Codigo de Autenticacao: %s", numero_auth), []string{entidade_final.Email})
+
+	if err != nil {
+		InterfaceAdapters.EscreverLogsMongoDb(err.Error(), "Falha ao Enviar Email")
+		InterfaceAdapters.LogFatal(err.Error())
+	}
+
 	return nil
 }
 

@@ -1,14 +1,14 @@
 package InterfaceAdapters
 
 import (
-	"log"
+	"fmt"
 	"os"
 )
 
 func PegaVariavelAmbiente(chave string) string {
 	valor, existe := os.LookupEnv(chave)
 	if !existe || valor == "" {
-		log.Fatalf("Erro Crítico: A variável de ambiente '%s' não foi definida no Sistema Operacional!", chave)
+		LogFatal(fmt.Sprintf("Erro Crítico: A variável de ambiente '%s' não foi definida no Sistema Operacional!", chave))
 	}
 	return valor
 }

@@ -2,6 +2,7 @@ package InterfaceAdapters
 
 import (
 	"context"
+	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -26,4 +27,8 @@ func EscreverLogsMongoDb(mensagem_erro string, pilha_erro string) (bool, string)
 	banco.Collection("logs").InsertOne(context.Background(), registros)
 
 	return true, "The content was write on logs"
+}
+
+func LogFatal(message string) {
+	log.Fatalf(message)
 }
