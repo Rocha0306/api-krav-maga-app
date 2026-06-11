@@ -21,7 +21,7 @@ func abrirRedis() *redis.Client {
 
 func SalvarUsuarioCache(codigo_auth string, usuario entities.Usuarios) error {
 	bytes, _ := json.Marshal(usuario)
-	return abrirRedis().Set(context.Background(), codigo_auth, bytes, 2*time.Minute).Err()
+	return abrirRedis().Set(context.Background(), codigo_auth, bytes, 15*time.Minute).Err()
 }
 
 func PegarUsuarioCache(chave string) (entities.Usuarios, error) {
