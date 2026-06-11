@@ -8,6 +8,8 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+const baseURLConvite = "https://kravconnect.vercel.app/invite?invite="
+
 func ControllerCadastro(response_write http.ResponseWriter, request *http.Request) {
 
 	usuario_dto := Desserializar[UsuarioDTO](request)
@@ -125,7 +127,7 @@ func ControllerGerarConvites(response http.ResponseWriter, request *http.Request
 		return
 	}
 
-	Status200(response, convite.ChaveConvite)
+	Status200(response, baseURLConvite+convite.ChaveConvite)
 
 }
 
@@ -137,14 +139,36 @@ func ControllerMostrarConvites(response http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	entidade, err_ := UsersCase.MostrarConvites(id_usuario)
+	convites, err_ := UsersCase.MostrarConvites(id_usuario)
 
 	if err_ != nil {
 		BadRequest(response, err_)
 		return
 	}
 
-	Status200(response, entidade)
+	Status200(response, MapearConvites(convites))
+}
+
+func ControllerDeletarConvite(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	id_convite := request.PathValue("id_convite")
+	if id_convite == "" {
+		BadRequest(response, errors.New("id_convite e obrigatorio"))
+		return
+	}
+
+	if err := UsersCase.DeletarConvite(id_usuario, id_convite); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Convite removido com sucesso")
 }
 
 func ControllerSolicitarEntrada(response http.ResponseWriter, request *http.Request) {
@@ -166,7 +190,7 @@ func ControllerSolicitarEntrada(response http.ResponseWriter, request *http.Requ
 	err = UsersCase.SolicitarEntrada(convite_dto.ConviteUUID, id_usuario)
 
 	if err != nil {
-		BadRequest(response, error_)
+		BadRequest(response, err)
 		return
 	}
 
@@ -245,15 +269,13 @@ func ControllerRemoverAluno(response http.ResponseWriter, request *http.Request)
 		return
 	}
 
-	remover_dto := Desserializar[RemoverAlunoDTO](request)
-	error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(remover_dto)
-
-	if error_ != nil {
-		BadRequest(response, error_)
+	id_aluno := request.PathValue("id_aluno")
+	if id_aluno == "" {
+		BadRequest(response, errors.New("id_aluno e obrigatorio"))
 		return
 	}
 
-	if err := UsersCase.RemoverAluno(id_usuario, remover_dto.IDAluno); err != nil {
+	if err := UsersCase.RemoverAluno(id_usuario, id_aluno); err != nil {
 		BadRequest(response, err)
 		return
 	}
@@ -278,7 +300,7 @@ func ControllerCriarAula(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if err := UsersCase.CriarAula(id_usuario, aula_dto.Conteudo, aula_dto.DataAula); err != nil {
+	if err := UsersCase.CriarAula(id_usuario, aula_dto.Conteudo, aula_dto.DataAula, aula_dto.Faixa); err != nil {
 		BadRequest(response, err)
 		return
 	}
@@ -313,7 +335,7 @@ func ControllerRegistrarPresenca(response http.ResponseWriter, request *http.Req
 }
 
 func ControllerContarPresencasAluno(response http.ResponseWriter, request *http.Request) {
-	_, err := ValidarJwt(*request)
+	id_usuario, err := ValidarJwt(*request)
 
 	if err != nil {
 		BadRequest(response, err)
@@ -327,8 +349,42 @@ func ControllerContarPresencasAluno(response http.ResponseWriter, request *http.
 		return
 	}
 
-	contagem := UsersCase.ContarPresencasAluno(id_aluno)
+	contagem, err := UsersCase.ContarPresencasAluno(id_usuario, id_aluno)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
 	Status200(response, ContagemPresencaDTO{IDAluno: id_aluno, Contagem: contagem})
+
+}
+
+func ControllerAtualizarFaixaAluno(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	id_aluno := request.PathValue("id_aluno")
+	if id_aluno == "" {
+		BadRequest(response, errors.New("id_aluno e obrigatorio"))
+		return
+	}
+
+	dto := Desserializar[AtualizarFaixaDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.AtualizarFaixaAluno(id_usuario, id_aluno, dto.Faixa); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Faixa do aluno atualizada com sucesso")
 
 }
 
@@ -406,13 +462,13 @@ func ControllerDeletarProduto(response http.ResponseWriter, request *http.Reques
 		return
 	}
 
-	dto := Desserializar[DeletarProdutoDTO](request)
-	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
-		BadRequest(response, error_)
+	id_produto := request.PathValue("id_produto")
+	if id_produto == "" {
+		BadRequest(response, errors.New("id_produto e obrigatorio"))
 		return
 	}
 
-	if err := UsersCase.DeletarProduto(id_usuario, dto.IDProduto); err != nil {
+	if err := UsersCase.DeletarProduto(id_usuario, id_produto); err != nil {
 		BadRequest(response, err)
 		return
 	}
@@ -511,6 +567,27 @@ func ControllerListarAulasDoDia(response http.ResponseWriter, request *http.Requ
 	}
 
 	aulas, err := UsersCase.ListarAulasDoDia(id_usuario)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, MapearAulas(aulas))
+
+}
+
+func ControllerListarAulasProfessor(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	data := request.URL.Query().Get("data")
+
+	aulas, err := UsersCase.ListarAulasProfessor(id_usuario, data)
 
 	if err != nil {
 		BadRequest(response, err)

@@ -86,6 +86,7 @@ type Aulas struct {
 	IDAula      string    `gorm:"primaryKey;column:id_aula;type:varchar(100)"`
 	DataAula    time.Time `gorm:"column:data_aula"`
 	Conteudo    string    `gorm:"column:conteudo;type:varchar(255)"`
+	Faixa       string    `gorm:"column:faixa;type:varchar(15)"`
 	IDAcademia  string    `gorm:"column:id_academia"`
 	IDInstrutor string    `gorm:"column:id_instrutor"`
 	Academia    Academias `gorm:"foreignKey:IDAcademia;references:ID"`

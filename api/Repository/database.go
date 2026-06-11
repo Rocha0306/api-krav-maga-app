@@ -2,7 +2,6 @@ package Repository
 
 import (
 	entities "api-back-end/api/Entities"
-	"fmt"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -14,12 +13,24 @@ const usuarioBanco string = "root"
 const senhaBanco string = "lorenzo05*"
 const nome_banco string = "KRAVMAGAAPP"
 
-func connect() *gorm.DB {
+var db *gorm.DB
+
+func init() {
 	dsn := "root:Lorenzo05*@tcp(localhost)/KRAVMAGAAPP?parseTime=True"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	conexao, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		fmt.Print(err)
+		panic(err)
 	}
+
+	sqlDB, _ := conexao.DB()
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	db = conexao
+}
+
+func connect() *gorm.DB {
 	return db
 }
 
@@ -110,4 +121,10 @@ func UpdateProduct(id_produto string, nome string, preco float64, tamanho string
 	connect().Model(&entities.Produtos{}).
 		Where("id_produto = ?", id_produto).
 		Updates(map[string]any{"nome": nome, "preco": preco, "tamanho": tamanho, "quantidade": quantidade})
+}
+
+func UpdateAlunoFaixa(id_aluno string, faixa string) {
+	connect().Model(&entities.Alunos{}).
+		Where("id_aluno = ?", id_aluno).
+		Updates(map[string]any{"faixa": faixa})
 }

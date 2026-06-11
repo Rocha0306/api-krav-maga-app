@@ -9,6 +9,7 @@ func MapearAulas(aulas []entities.Aulas) []AulaDTO {
 			IDAula:      aula.IDAula,
 			DataAula:    aula.DataAula,
 			Conteudo:    aula.Conteudo,
+			Faixa:       aula.Faixa,
 			IDInstrutor: aula.IDInstrutor,
 		})
 	}
@@ -37,6 +38,17 @@ func MapearProdutos(produtos []entities.Produtos) []ProdutoDTO {
 			Preco:      p.Preco,
 			Tamanho:    p.Tamanho,
 			Quantidade: p.Quantidade,
+		})
+	}
+	return resultado
+}
+
+func MapearConvites(convites []entities.Convites) []ConviteResponseDTO {
+	resultado := make([]ConviteResponseDTO, 0, len(convites))
+	for _, convite := range convites {
+		resultado = append(resultado, ConviteResponseDTO{
+			IDConvite: convite.IDConvite,
+			Link:      baseURLConvite + convite.ChaveConvite,
 		})
 	}
 	return resultado

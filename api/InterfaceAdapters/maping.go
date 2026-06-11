@@ -2,7 +2,6 @@ package InterfaceAdapters
 
 import (
 	entities "api-back-end/api/Entities"
-	"fmt"
 	"time"
 )
 
@@ -60,7 +59,7 @@ func MapearConvite(id_academia string) *entities.Convites {
 	return &entities.Convites{
 		IDConvite:    GerarId(),
 		IDAcademia:   id_academia,
-		ChaveConvite: fmt.Sprintf("URLFrontComParametro?invite=%s", GerarUUID()),
+		ChaveConvite: GerarUUID(),
 	}
 }
 
@@ -73,11 +72,12 @@ func MapearSolicitacaoConvite(id_academia string, id_usuario string) *entities.S
 }
 
 // Uma aula (sessao): data, conteudo dado, academia e instrutor.
-func MapearAula(conteudo string, id_academia string, id_instrutor string, data_aula time.Time) *entities.Aulas {
+func MapearAula(conteudo string, id_academia string, id_instrutor string, data_aula time.Time, faixa string) *entities.Aulas {
 	return &entities.Aulas{
 		IDAula:      GerarId(),
 		DataAula:    data_aula,
 		Conteudo:    conteudo,
+		Faixa:       faixa,
 		IDAcademia:  id_academia,
 		IDInstrutor: id_instrutor,
 	}

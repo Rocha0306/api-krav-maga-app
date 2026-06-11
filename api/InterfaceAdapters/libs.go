@@ -83,6 +83,7 @@ func EnviarEmail(conteudo string, para []string) error {
 
 	cliente_smtp, err := servidor_smtp.Connect()
 	if err != nil {
+		EscreverLogsMongoDb("Erro ao conectar no SMTP do email: "+err.Error(), "InterfaceAdapters/libs.go/EnviarEmail()")
 		return err
 	}
 
@@ -91,8 +92,14 @@ func EnviarEmail(conteudo string, para []string) error {
 	msg.AddTo(para...)
 	msg.SetSubject("Autenticao aplicativo Krav")
 	msg.SetBody(mail.TextPlain, conteudo)
+	err = msg.Send(cliente_smtp)
 
-	return msg.Send(cliente_smtp)
+	if err != nil {
+		EscreverLogsMongoDb("Erro ao enviar email: "+err.Error(), "InterfaceAdapters/libs.go/EnviarEmail()")
+		return err
+	}
+
+	return nil
 }
 
 func DateTimeNow() time.Time {

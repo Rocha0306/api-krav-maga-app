@@ -21,7 +21,12 @@ type CodigoUsuarioDTO struct {
 }
 
 type CodigoConviteDTO struct {
-	ConviteUUID string `json:"convite_uuid" validate:"required,max=100"`
+	ConviteUUID string `json:"convite_uuid" validate:"required,uuid"`
+}
+
+type ConviteResponseDTO struct {
+	IDConvite string `json:"id_convite"`
+	Link      string `json:"link"`
 }
 
 type AcademiaDTO struct {
@@ -48,13 +53,14 @@ type AprovarSolicitacaoDTO struct {
 	IDSolicitacao string `json:"id_solicitacao" validate:"required,max=100"`
 }
 
-type RemoverAlunoDTO struct {
-	IDAluno string `json:"id_aluno" validate:"required,max=100"`
-}
-
 type CriarAulaDTO struct {
 	Conteudo string `json:"conteudo" validate:"required,max=255"`
 	DataAula string `json:"data_aula" validate:"required"`
+	Faixa    string `json:"faixa" validate:"required,max=15"`
+}
+
+type AtualizarFaixaDTO struct {
+	Faixa string `json:"faixa" validate:"required,max=15"`
 }
 
 type PresencaDTO struct {
@@ -88,6 +94,7 @@ type AulaDTO struct {
 	IDAula      string    `json:"id_aula"`
 	DataAula    time.Time `json:"data_aula"`
 	Conteudo    string    `json:"conteudo"`
+	Faixa       string    `json:"faixa"`
 	IDInstrutor string    `json:"id_instrutor"`
 }
 
@@ -104,10 +111,6 @@ type AtualizarProdutoDTO struct {
 	Preco      float64 `json:"preco"       validate:"required"`
 	Tamanho    string  `json:"tamanho"     validate:"required,max=20"`
 	Quantidade int     `json:"quantidade"  validate:"required,min=1"`
-}
-
-type DeletarProdutoDTO struct {
-	IDProduto string `json:"id_produto" validate:"required,max=100"`
 }
 
 type ProdutoDTO struct {
