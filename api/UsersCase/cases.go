@@ -223,6 +223,14 @@ func SolicitarEntrada(codigo_convite string, id_usuario string) error {
 
 	convite := Repository.SelectWhere[entities.Convites]("chave_convite", codigo_convite)
 
+	if Repository.ExistsTwo[entities.Professores]("id_usuario_professor", id_usuario, "id_academia_professor", convite.IDAcademia) {
+		return errors.New("voce ja eh professor dessa academia")
+	}
+
+	if Repository.ExistsTwo[entities.Alunos]("id_usuario_aluno", id_usuario, "id_academia_aluno", convite.IDAcademia) {
+		return errors.New("voce ja eh aluno dessa academia")
+	}
+
 	if Repository.ExistsTwo[entities.SolicitacoesConvite]("id_usuario", id_usuario, "id_academia", convite.IDAcademia) {
 		return errors.New("voce ja solicitou entrada nessa academia, aguarde a aprovacao do professor")
 	}
