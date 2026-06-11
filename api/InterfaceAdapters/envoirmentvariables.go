@@ -33,8 +33,19 @@ func SenhaRedis() string {
 	return PegaVariavelAmbiente("REDIS_PASS")
 }
 
-func SenhaAppGmail() string {
-	return PegaVariavelAmbiente("EMAIL_APP_PASS")
+// Chave da API do Brevo. Aceita BREVO_API_KEY; se nao existir, reaproveita
+// a EMAIL_APP_PASS que ja estava configurada, pra nao exigir env nova.
+func EmailApiKey() string {
+	if chave := os.Getenv("BREVO_API_KEY"); chave != "" {
+		return chave
+	}
+	return os.Getenv("EMAIL_APP_PASS")
+}
+
+// Email remetente verificado no Brevo. Pode ser ate um gmail (via "single
+// sender verification"), sem precisar de dominio proprio. Setar em EMAIL_FROM.
+func EmailRemetente() string {
+	return os.Getenv("EMAIL_FROM")
 }
 
 func JwtSecret() string {

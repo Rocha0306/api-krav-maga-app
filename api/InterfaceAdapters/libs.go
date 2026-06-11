@@ -1,16 +1,20 @@
 package InterfaceAdapters
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"math"
 	"math/rand/v2"
+	"net/http"
 	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	mail "github.com/xhit/go-simple-mail/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -72,31 +76,45 @@ func GerarNumeroAuth() int {
 	return rand.IntN(1000000)
 }
 
+// EnviarEmail envia via API HTTP do Brevo (porta 443), pois o Render bloqueia
+// as portas de SMTP de saida (25/465/587) — por isso o SMTP direto dava timeout.
+// O Brevo permite verificar so um email remetente (ate um gmail), sem exigir
+// dominio proprio.
 func EnviarEmail(conteudo string, para []string) error {
-	email_de := "kravconnect@gmail.com"
-	servidor_smtp := mail.NewSMTPClient()
-	servidor_smtp.Host = "smtp.gmail.com"
-	servidor_smtp.Port = 587
-	servidor_smtp.Encryption = mail.EncryptionSTARTTLS
-	servidor_smtp.Username = email_de
-	servidor_smtp.Password = SenhaAppGmail()
-
-	cliente_smtp, err := servidor_smtp.Connect()
-	if err != nil {
-		EscreverLogsMongoDb("Erro ao conectar no SMTP do email: "+err.Error(), "InterfaceAdapters/libs.go/EnviarEmail()")
-		return err
+	destinatarios := make([]map[string]string, 0, len(para))
+	for _, email := range para {
+		destinatarios = append(destinatarios, map[string]string{"email": email})
 	}
 
-	msg := mail.NewMSG()
-	msg.SetFrom(email_de)
-	msg.AddTo(para...)
-	msg.SetSubject("Autenticao aplicativo Krav")
-	msg.SetBody(mail.TextPlain, conteudo)
-	err = msg.Send(cliente_smtp)
+	corpo, _ := json.Marshal(map[string]interface{}{
+		"sender":      map[string]string{"name": "KravConnect", "email": EmailRemetente()},
+		"to":          destinatarios,
+		"subject":     "Autenticacao aplicativo Krav",
+		"textContent": conteudo,
+	})
 
+	requisicao, err := http.NewRequest("POST", "https://api.brevo.com/v3/smtp/email", bytes.NewBuffer(corpo))
+	if err != nil {
+		EscreverLogsMongoDb("Erro ao montar requisicao de email: "+err.Error(), "InterfaceAdapters/libs.go/EnviarEmail()")
+		return err
+	}
+	requisicao.Header.Set("api-key", EmailApiKey())
+	requisicao.Header.Set("Content-Type", "application/json")
+	requisicao.Header.Set("Accept", "application/json")
+
+	cliente := &http.Client{Timeout: 15 * time.Second}
+	resposta, err := cliente.Do(requisicao)
 	if err != nil {
 		EscreverLogsMongoDb("Erro ao enviar email: "+err.Error(), "InterfaceAdapters/libs.go/EnviarEmail()")
 		return err
+	}
+	defer resposta.Body.Close()
+
+	if resposta.StatusCode >= 300 {
+		detalhe, _ := io.ReadAll(resposta.Body)
+		msg := fmt.Sprintf("Brevo retornou %d: %s", resposta.StatusCode, string(detalhe))
+		EscreverLogsMongoDb(msg, "InterfaceAdapters/libs.go/EnviarEmail()")
+		return errors.New(msg)
 	}
 
 	return nil
