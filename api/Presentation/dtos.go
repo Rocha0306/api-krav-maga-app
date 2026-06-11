@@ -30,15 +30,24 @@ type RedefinirSenhaDTO struct {
 }
 
 type PerfilUsuarioDTO struct {
-	ID             string    `json:"id"`
-	Nome           string    `json:"name"`
-	Email          string    `json:"email"`
-	Genero         string    `json:"genero"`
-	CPF            string    `json:"cpf"`
-	DataNascimento time.Time `json:"data_nascimento"`
-	EnderecoID     string    `json:"endereco_id"`
-	Role           string    `json:"role"`
-	Faixa          string    `json:"faixa"`
+	ID             string               `json:"id"`
+	Nome           string               `json:"name"`
+	Email          string               `json:"email"`
+	Genero         string               `json:"genero"`
+	CPF            string               `json:"cpf"`
+	DataNascimento time.Time            `json:"data_nascimento"`
+	EnderecoID     string               `json:"endereco_id"`
+	Role           string               `json:"role"`
+	Faixa          string               `json:"faixa"`
+	Academias      []AcademiaVinculoDTO `json:"academias"`
+}
+
+type AcademiaVinculoDTO struct {
+	ID      string `json:"id"`
+	Nome    string `json:"nome"`
+	CNPJ    string `json:"cnpj"`
+	Vinculo string `json:"vinculo"`
+	Faixa   string `json:"faixa,omitempty"`
 }
 
 type CodigoConviteDTO struct {

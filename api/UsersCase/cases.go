@@ -90,21 +90,51 @@ func Login(email string, senha string) (string, error) {
 	return InterfaceAdapters.GerarTokenJwt(usuario.ID), nil
 }
 
-func PerfilUsuario(id_usuario string) (entities.Usuarios, string, string) {
+// AcademiaVinculo descreve uma academia a que o usuario pertence e em qual papel.
+// Um mesmo usuario pode ser professor de uma academia e aluno de outra, por isso
+// o perfil retorna uma lista.
+type AcademiaVinculo struct {
+	ID      string
+	Nome    string
+	CNPJ    string
+	Vinculo string // "professor" | "instrutor" | "aluno"
+	Faixa   string // preenchido apenas quando o vinculo e "aluno"
+}
+
+func PerfilUsuario(id_usuario string) (entities.Usuarios, string, string, []AcademiaVinculo) {
 	usuario := Repository.SelectWhere[entities.Usuarios]("ID", id_usuario)
 
+	academias := []AcademiaVinculo{}
+
+	professores := Repository.SelectWhereList[entities.Professores]("id_usuario_professor", id_usuario)
+	for _, p := range professores {
+		ac := Repository.SelectWhere[entities.Academias]("ID", p.IDAcademiaProfessor)
+		academias = append(academias, AcademiaVinculo{ID: ac.ID, Nome: ac.Nome, CNPJ: ac.CNPJ, Vinculo: "professor"})
+	}
+
+	instrutores := Repository.SelectWhereList[entities.Instrutores]("id_usuario_instrutor", id_usuario)
+	for _, i := range instrutores {
+		ac := Repository.SelectWhere[entities.Academias]("ID", i.IDAcademiaInstrutor)
+		academias = append(academias, AcademiaVinculo{ID: ac.ID, Nome: ac.Nome, CNPJ: ac.CNPJ, Vinculo: "instrutor"})
+	}
+
+	alunos := Repository.SelectWhereList[entities.Alunos]("id_usuario_aluno", id_usuario)
+	for _, a := range alunos {
+		ac := Repository.SelectWhere[entities.Academias]("ID", a.IDAcademiaAluno)
+		academias = append(academias, AcademiaVinculo{ID: ac.ID, Nome: ac.Nome, CNPJ: ac.CNPJ, Vinculo: "aluno", Faixa: a.Faixa})
+	}
+
 	role := "student"
-	if Repository.Exists[entities.Professores]("id_usuario_professor", id_usuario) {
+	if len(professores) > 0 {
 		role = "teacher"
 	}
 
 	faixa := ""
-	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
-	if aluno.IDAluno != "" {
-		faixa = aluno.Faixa
+	if len(alunos) > 0 {
+		faixa = alunos[0].Faixa
 	}
 
-	return *usuario, role, faixa
+	return *usuario, role, faixa, academias
 }
 
 func EsqueciSenha(email string) error {

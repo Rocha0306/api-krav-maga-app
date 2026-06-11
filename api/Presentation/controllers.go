@@ -89,7 +89,18 @@ func ControllerPerfilUsuario(response http.ResponseWriter, request *http.Request
 		return
 	}
 
-	usuario, role, faixa := UsersCase.PerfilUsuario(id_usuario)
+	usuario, role, faixa, academias := UsersCase.PerfilUsuario(id_usuario)
+
+	academiasDTO := make([]AcademiaVinculoDTO, 0, len(academias))
+	for _, a := range academias {
+		academiasDTO = append(academiasDTO, AcademiaVinculoDTO{
+			ID:      a.ID,
+			Nome:    a.Nome,
+			CNPJ:    a.CNPJ,
+			Vinculo: a.Vinculo,
+			Faixa:   a.Faixa,
+		})
+	}
 
 	Status200(response, PerfilUsuarioDTO{
 		ID:             usuario.ID,
@@ -101,6 +112,7 @@ func ControllerPerfilUsuario(response http.ResponseWriter, request *http.Request
 		EnderecoID:     usuario.EnderecoID,
 		Role:           role,
 		Faixa:          faixa,
+		Academias:      academiasDTO,
 	})
 }
 
