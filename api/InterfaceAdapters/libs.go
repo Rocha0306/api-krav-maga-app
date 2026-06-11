@@ -22,7 +22,7 @@ func GerarId() string {
 	return strconv.Itoa(int(uuid.New().ID()))
 }
 
-var chave_jwt = []byte("lorenzo_teste")
+var chave_jwt = []byte(JwtSecret())
 
 func GerarTokenJwt(id_usuario string) string {
 	claims_token := jwt.RegisteredClaims{
@@ -79,7 +79,7 @@ func EnviarEmail(conteudo string, para []string) error {
 	servidor_smtp.Port = 587
 	servidor_smtp.Encryption = mail.EncryptionSTARTTLS
 	servidor_smtp.Username = email_de
-	servidor_smtp.Password = "ydqr kcag chut zvcb"
+	servidor_smtp.Password = SenhaAppGmail()
 
 	cliente_smtp, err := servidor_smtp.Connect()
 	if err != nil {

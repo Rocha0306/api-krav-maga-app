@@ -14,7 +14,7 @@ type Registros struct {
 
 func EscreverLogsMongoDb(mensagem_erro string, pilha_erro string) (bool, string) {
 
-	banco_logs, erro_conexao_banco := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb+srv://lmp:lorenzo05@kravmagaapplogs.eg0vvd9.mongodb.net/"))
+	banco_logs, erro_conexao_banco := mongo.Connect(context.Background(), options.Client().ApplyURI(ConnectionStringMongo()))
 
 	if erro_conexao_banco != nil {
 		return false, "Error to connect mongodb"

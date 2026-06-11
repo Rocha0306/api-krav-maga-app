@@ -2,21 +2,17 @@ package Repository
 
 import (
 	entities "api-back-end/api/Entities"
+	"api-back-end/api/InterfaceAdapters"
 	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-const enderecoBanco string = "localhost"
-const usuarioBanco string = "root"
-const senhaBanco string = "lorenzo05*"
-const nome_banco string = "KRAVMAGAAPP"
-
 var db *gorm.DB
 
 func init() {
-	dsn := "root:Lorenzo05*@tcp(localhost)/KRAVMAGAAPP?parseTime=True"
+	dsn := InterfaceAdapters.ConnectionStringBanco()
 	conexao, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)

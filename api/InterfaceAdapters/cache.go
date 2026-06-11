@@ -12,9 +12,9 @@ import (
 
 func abrirRedis() *redis.Client {
 	return redis.NewClient(&redis.Options{
-		Addr:     "enchanting-place-reaction-20529.db.redis.io:12800",
-		Username: "default",
-		Password: "dSzsiTMprSKooLGEN8LDpbitcalCdf9y",
+		Addr:     ConnectionStringRedis(),
+		Username: UserRedis(),
+		Password: SenhaRedis(),
 		DB:       0,
 	})
 }
