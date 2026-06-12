@@ -16,7 +16,7 @@ func main() {
 	http.HandleFunc("POST /Users/Password/Forgot", Presentation.ControllerEsqueciSenha)
 	http.HandleFunc("POST /Users/Password/Reset", Presentation.ControllerRedefinirSenha)
 	http.HandleFunc("POST /Gyms/Creation", Presentation.ControllerCriarAcademia)
-	http.HandleFunc("GET /Gyms", Presentation.ControllerListarAcademias)
+	http.HandleFunc("GET /Gyms/List", Presentation.ControllerListarAcademias)
 	http.HandleFunc("POST /Gyms/Invites/Creation", Presentation.ControllerGerarConvites)
 	http.HandleFunc("GET /Gyms/Invites/List", Presentation.ControllerMostrarConvites)
 	http.HandleFunc("DELETE /Gyms/Invites/{id_convite}", Presentation.ControllerDeletarConvite)
