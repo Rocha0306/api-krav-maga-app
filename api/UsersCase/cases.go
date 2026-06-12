@@ -508,23 +508,16 @@ func DeletarProduto(id_usuario string, id_produto string) error {
 	return nil
 }
 
-func ListarCatalogo(id_usuario string) ([]entities.Produtos, error) {
-	id_academia := ""
-
-	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
-	if professor.IDProfessor != "" {
-		id_academia = professor.IDAcademiaProfessor
+func ListarCatalogo(id_usuario string, id_academia string) ([]entities.Produtos, error) {
+	if id_academia == "" {
+		return nil, errors.New("id da academia nao informado")
 	}
 
-	if id_academia == "" {
-		aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
-		if aluno.IDAluno != "" {
-			id_academia = aluno.IDAcademiaAluno
-		}
-	}
+	pertence := Repository.ExistsTwo[entities.Professores]("id_usuario_professor", id_usuario, "id_academia_professor", id_academia) ||
+		Repository.ExistsTwo[entities.Alunos]("id_usuario_aluno", id_usuario, "id_academia_aluno", id_academia)
 
-	if id_academia == "" {
-		return nil, errors.New("voce nao pertence a nenhuma academia")
+	if !pertence {
+		return nil, errors.New("voce nao pertence a essa academia")
 	}
 
 	return Repository.SelectWhereList[entities.Produtos]("id_academia", id_academia), nil

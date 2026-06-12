@@ -548,7 +548,9 @@ func ControllerListarCatalogo(response http.ResponseWriter, request *http.Reques
 		return
 	}
 
-	produtos, err := UsersCase.ListarCatalogo(id_usuario)
+	id_academia := request.URL.Query().Get("id_academia")
+
+	produtos, err := UsersCase.ListarCatalogo(id_usuario, id_academia)
 	if err != nil {
 		BadRequest(response, err)
 		return
