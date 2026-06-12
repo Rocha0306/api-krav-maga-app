@@ -356,7 +356,7 @@ func RegistrarPresenca(id_usuario string, id_aula string, latitude float64, long
 	}
 
 	distancia := InterfaceAdapters.CalcularDistanciaMetros(latitude, longitude, *academia.Latitude, *academia.Longitude)
-	if distancia >= 100 {
+	if distancia >= 500 {
 		return errors.New("voce esta longe demais da academia para registrar presenca")
 	}
 

@@ -1,0 +1,14 @@
+Banco_Local: "root:Lorenzo05*@tcp(localhost)/KRAVMAGAAPP?parseTime=True"
+
+Endereco Redis: enchanting-place-reaction-20529.db.redis.io:12800
+
+Username Redis: "default",
+
+Password Redis: "dSzsiTMprSKooLGEN8LDpbitcalCdf9y",
+
+Mongo: "mongodb+srv://lmp:lorenzo05@kravmagaapplogs.eg0vvd9.mongodb.net/"
+
+Email: "ydqr kcag chut zvcb"
+
+Jwt: poder_da_amizade
+
