@@ -27,6 +27,7 @@ func main() {
 	http.HandleFunc("PUT /Gyms/Students/{id_aluno}/Belt", Presentation.ControllerAtualizarFaixaAluno)
 	http.HandleFunc("POST /Gyms/Instructors/Creation", Presentation.ControllerCriarInstrutor)
 	http.HandleFunc("POST /Gyms/Classes/Creation", Presentation.ControllerCriarAula)
+	http.HandleFunc("PUT /Gyms/Classes/Update", Presentation.ControllerAtualizarAula)
 	http.HandleFunc("GET /Gyms/Classes/Day", Presentation.ControllerListarAulasDoDia)
 	http.HandleFunc("GET /Gyms/Classes", Presentation.ControllerListarAulasProfessor)
 	http.HandleFunc("POST /Student/Presence", Presentation.ControllerRegistrarPresenca)

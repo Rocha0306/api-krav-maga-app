@@ -128,6 +128,12 @@ func UpdateProduct(id_produto string, nome string, preco float64, tamanho string
 		Updates(map[string]any{"nome": nome, "preco": preco, "tamanho": tamanho, "quantidade": quantidade, "imagem_url": imagem_url})
 }
 
+func UpdateClass(id_aula string, conteudo string, data_aula time.Time, faixa string) {
+	connect().Model(&entities.Aulas{}).
+		Where("id_aula = ?", id_aula).
+		Updates(map[string]any{"conteudo": conteudo, "data_aula": data_aula, "faixa": faixa})
+}
+
 func UpdateAlunoFaixa(id_aluno string, faixa string) {
 	connect().Model(&entities.Alunos{}).
 		Where("id_aluno = ?", id_aluno).

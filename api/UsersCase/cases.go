@@ -137,6 +137,24 @@ func PerfilUsuario(id_usuario string) (entities.Usuarios, string, string, []Acad
 	return *usuario, role, faixa, academias
 }
 
+func ListarAcademias(id_usuario string) []AcademiaVinculo {
+	academias := []AcademiaVinculo{}
+
+	professores := Repository.SelectWhereList[entities.Professores]("id_usuario_professor", id_usuario)
+	for _, p := range professores {
+		ac := Repository.SelectWhere[entities.Academias]("ID", p.IDAcademiaProfessor)
+		academias = append(academias, AcademiaVinculo{ID: ac.ID, Nome: ac.Nome, CNPJ: ac.CNPJ, Vinculo: "professor"})
+	}
+
+	alunos := Repository.SelectWhereList[entities.Alunos]("id_usuario_aluno", id_usuario)
+	for _, a := range alunos {
+		ac := Repository.SelectWhere[entities.Academias]("ID", a.IDAcademiaAluno)
+		academias = append(academias, AcademiaVinculo{ID: ac.ID, Nome: ac.Nome, CNPJ: ac.CNPJ, Vinculo: "aluno", Faixa: a.Faixa})
+	}
+
+	return academias
+}
+
 func EsqueciSenha(email string) error {
 	usuario := Repository.SelectWhere[entities.Usuarios]("email", email)
 	if usuario.ID == "" {
@@ -324,6 +342,43 @@ func CriarAula(id_usuario string, conteudo string, data_aula string, faixa strin
 
 	entidade_aula := InterfaceAdapters.MapearAula(conteudo, id_academia, id_usuario, data, faixa)
 	Repository.Inserir(entidade_aula)
+	return nil
+}
+
+func AtualizarAula(id_usuario string, id_aula string, conteudo string, data_aula string, faixa string) error {
+	id_academia := ""
+
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	if professor.IDProfessor != "" {
+		id_academia = professor.IDAcademiaProfessor
+	}
+
+	if id_academia == "" {
+		instrutor := Repository.SelectWhere[entities.Instrutores]("id_usuario_instrutor", id_usuario)
+		if instrutor.IDInstrutor != "" {
+			id_academia = instrutor.IDAcademiaInstrutor
+		}
+	}
+
+	if id_academia == "" {
+		return errors.New("voce nao pode atualizar aulas ja que nao eh professor nem instrutor")
+	}
+
+	aula := Repository.SelectWhere[entities.Aulas]("id_aula", id_aula)
+	if aula.IDAula == "" {
+		return errors.New("aula nao encontrada")
+	}
+
+	if aula.IDAcademia != id_academia {
+		return errors.New("essa aula nao pertence a sua academia")
+	}
+
+	data, err := time.Parse("2006-01-02 15:04", data_aula)
+	if err != nil {
+		return errors.New("data da aula invalida, use o formato AAAA-MM-DD HH:MM")
+	}
+
+	Repository.UpdateClass(id_aula, conteudo, data, faixa)
 	return nil
 }
 

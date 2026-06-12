@@ -81,6 +81,30 @@ func ControllerLogin(response http.ResponseWriter, request *http.Request) {
 	Status200(response, token)
 }
 
+func ControllerListarAcademias(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	academias := UsersCase.ListarAcademias(id_usuario)
+
+	academiasDTO := make([]AcademiaVinculoDTO, 0, len(academias))
+	for _, a := range academias {
+		academiasDTO = append(academiasDTO, AcademiaVinculoDTO{
+			ID:      a.ID,
+			Nome:    a.Nome,
+			CNPJ:    a.CNPJ,
+			Vinculo: a.Vinculo,
+			Faixa:   a.Faixa,
+		})
+	}
+
+	Status200(response, academiasDTO)
+}
+
 func ControllerPerfilUsuario(response http.ResponseWriter, request *http.Request) {
 	id_usuario, err := ValidarJwt(*request)
 
@@ -372,6 +396,30 @@ func ControllerCriarAula(response http.ResponseWriter, request *http.Request) {
 
 	Status200(response, "Aula criada com sucesso")
 
+}
+
+func ControllerAtualizarAula(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	aula_dto := Desserializar[AtualizarAulaDTO](request)
+	error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(aula_dto)
+
+	if error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.AtualizarAula(id_usuario, aula_dto.IDAula, aula_dto.Conteudo, aula_dto.DataAula, aula_dto.Faixa); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Aula atualizada com sucesso")
 }
 
 func ControllerRegistrarPresenca(response http.ResponseWriter, request *http.Request) {

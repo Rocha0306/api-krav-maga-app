@@ -89,6 +89,13 @@ type CriarAulaDTO struct {
 	Faixa    string `json:"faixa" validate:"required,max=15"`
 }
 
+type AtualizarAulaDTO struct {
+	IDAula   string `json:"id_aula" validate:"required"`
+	Conteudo string `json:"conteudo" validate:"required,max=255"`
+	DataAula string `json:"data_aula" validate:"required"`
+	Faixa    string `json:"faixa" validate:"required,max=15"`
+}
+
 type AtualizarFaixaDTO struct {
 	Faixa string `json:"faixa" validate:"required,max=15"`
 }
