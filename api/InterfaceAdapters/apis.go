@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -52,7 +53,7 @@ type CepApiResponse struct {
 type CnpjApiResponse struct {
 }
 
-const stripe_secret_key = "sk_test_sua_chave_stripe"
+var stripe_secret_key = os.Getenv("STRIPE_SECRET_KEY")
 
 type StripePaymentIntentResponse struct {
 	ID           string `json:"id"`
@@ -62,14 +63,95 @@ type StripePaymentIntentResponse struct {
 	Currency     string `json:"currency"`
 }
 
-func StripeCriarPagamento(valor_centavos int64, descricao string) (StripePaymentIntentResponse, error) {
+type StripeContaConectadaResponse struct {
+	ID string `json:"id"`
+}
+
+type StripeAccountLinkResponse struct {
+	URL string `json:"url"`
+}
+
+// StripeCriarContaConectada cria a conta conectada (acct_...) do professor (Call 1).
+func StripeCriarContaConectada(email string) (StripeContaConectadaResponse, error) {
+	var resposta StripeContaConectadaResponse
+
+	dados := url.Values{}
+	dados.Set("type", "express")
+	dados.Set("country", "BR")
+	dados.Set("email", email)
+	dados.Add("capabilities[pix_payments][requested]", "true")
+	dados.Add("capabilities[transfers][requested]", "true")
+
+	request, err := http.NewRequest("POST", "https://api.stripe.com/v1/accounts", strings.NewReader(dados.Encode()))
+	if err != nil {
+		return resposta, errors.New("erro ao preparar conta conectada")
+	}
+	request.SetBasicAuth(stripe_secret_key, "")
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return resposta, errors.New("erro ao conectar com a Stripe")
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return resposta, errors.New("erro ao criar conta conectada na Stripe")
+	}
+
+	json.NewDecoder(response.Body).Decode(&resposta)
+	return resposta, nil
+}
+
+// StripeCriarAccountLink gera a URL de onboarding pra o professor cadastrar a chave Pix (Call 2).
+func StripeCriarAccountLink(stripe_account_id string) (StripeAccountLinkResponse, error) {
+	var resposta StripeAccountLinkResponse
+
+	refresh_url := os.Getenv("STRIPE_ONBOARDING_REFRESH_URL")
+	if refresh_url == "" {
+		refresh_url = "https://example.com/stripe/refresh"
+	}
+	return_url := os.Getenv("STRIPE_ONBOARDING_RETURN_URL")
+	if return_url == "" {
+		return_url = "https://example.com/stripe/return"
+	}
+
+	dados := url.Values{}
+	dados.Set("account", stripe_account_id)
+	dados.Set("type", "account_onboarding")
+	dados.Set("refresh_url", refresh_url)
+	dados.Set("return_url", return_url)
+
+	request, err := http.NewRequest("POST", "https://api.stripe.com/v1/account_links", strings.NewReader(dados.Encode()))
+	if err != nil {
+		return resposta, errors.New("erro ao preparar link de cadastro")
+	}
+	request.SetBasicAuth(stripe_secret_key, "")
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return resposta, errors.New("erro ao conectar com a Stripe")
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return resposta, errors.New("erro ao gerar link de cadastro na Stripe")
+	}
+
+	json.NewDecoder(response.Body).Decode(&resposta)
+	return resposta, nil
+}
+
+func StripeCriarPagamento(valor_centavos int64, descricao string, stripe_account_id string) (StripePaymentIntentResponse, error) {
 	var resposta StripePaymentIntentResponse
 
 	dados := url.Values{}
 	dados.Set("amount", strconv.FormatInt(valor_centavos, 10))
 	dados.Set("currency", "brl")
 	dados.Set("description", descricao)
-	dados.Add("payment_method_types[]", "card")
 	dados.Add("payment_method_types[]", "pix")
 
 	request, err := http.NewRequest("POST", "https://api.stripe.com/v1/payment_intents", strings.NewReader(dados.Encode()))
@@ -78,6 +160,8 @@ func StripeCriarPagamento(valor_centavos int64, descricao string) (StripePayment
 	}
 	request.SetBasicAuth(stripe_secret_key, "")
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	// Direct charge: o pagamento eh processado na conta do professor, dinheiro cai pra ele.
+	request.Header.Set("Stripe-Account", stripe_account_id)
 
 	client := &http.Client{}
 	response, err := client.Do(request)

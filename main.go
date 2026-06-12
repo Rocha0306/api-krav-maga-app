@@ -40,7 +40,12 @@ func main() {
 	http.HandleFunc("DELETE /Gyms/Catalog/{id_produto}", Presentation.ControllerDeletarProduto)
 	http.HandleFunc("GET /Gyms/Catalog", Presentation.ControllerListarCatalogo)
 	http.HandleFunc("POST /Student/Interest", Presentation.ControllerSinalizarInteresse)
+	http.HandleFunc("POST /Gyms/Products/Email", Presentation.ControllerEnviarEmail)
+	http.HandleFunc("POST /Gyms/Pix/Onboarding", Presentation.ControllerConfigurarRecebimentoPix)
 	http.HandleFunc("POST /Student/Payment", Presentation.ControllerRealizarPagamento)
+	// Documentacao (aberta)
+	http.HandleFunc("GET /internal/docs", Presentation.ControllerSwaggerUI)
+	http.HandleFunc("GET /internal/docs/openapi.json", Presentation.ControllerSwaggerJSON)
 	http.ListenAndServe(":8080", cors(http.DefaultServeMux))
 
 }

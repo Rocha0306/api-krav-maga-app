@@ -37,6 +37,7 @@ type PerfilUsuarioDTO struct {
 	CPF            string               `json:"cpf"`
 	DataNascimento time.Time            `json:"data_nascimento"`
 	EnderecoID     string               `json:"endereco_id"`
+	CEP            string               `json:"cep"`
 	Role           string               `json:"role"`
 	Faixa          string               `json:"faixa"`
 	Academias      []AcademiaVinculoDTO `json:"academias"`
@@ -179,4 +180,13 @@ type PagamentoDTO struct {
 type RespostaPagamentoDTO struct {
 	IDPagamento  string `json:"id_pagamento"`
 	ClientSecret string `json:"client_secret"`
+}
+
+type RespostaOnboardingPixDTO struct {
+	URL string `json:"url"`
+}
+
+type EnviarEmailDTO struct {
+	Para     string `json:"para" validate:"required,email"`
+	Conteudo string `json:"conteudo" validate:"required"`
 }

@@ -1,0 +1,268 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_source": "claude.krav-maga-app",
+  "resources": [
+    {
+      "_id": "wrk_krav",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "KravConnect API",
+      "description": "Collection gerada para testes locais",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_krav",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "token": ""
+      },
+      "metaSortKey": 1
+    },
+
+    { "_id": "fld_users", "_type": "request_group", "parentId": "wrk_krav", "name": "Users", "metaSortKey": -100 },
+    {
+      "_id": "req_login", "_type": "request", "parentId": "fld_users", "name": "Login", "method": "POST",
+      "url": "{{ _.base_url }}/Users/Auth",
+      "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"email\": \"lorenzo@email.com\", \"senha\": \"123456\" }" },
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_register", "_type": "request", "parentId": "fld_users", "name": "Registration", "method": "POST",
+      "url": "{{ _.base_url }}/Users/Registration",
+      "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"email\": \"lorenzo@email.com\", \"senha\": \"123456\", \"cpf\": \"12345678901\", \"cep\": \"11075350\" }" },
+      "metaSortKey": -99
+    },
+    {
+      "_id": "req_register_confirm", "_type": "request", "parentId": "fld_users", "name": "Registration Confirm", "method": "POST",
+      "url": "{{ _.base_url }}/Users/Registration/Confirm",
+      "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"codigo_auth\": \"123456\" }" },
+      "metaSortKey": -98
+    },
+    {
+      "_id": "req_pass_forgot", "_type": "request", "parentId": "fld_users", "name": "Password Forgot", "method": "POST",
+      "url": "{{ _.base_url }}/Users/Password/Forgot",
+      "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"email\": \"lorenzo@email.com\" }" },
+      "metaSortKey": -97
+    },
+    {
+      "_id": "req_pass_reset", "_type": "request", "parentId": "fld_users", "name": "Password Reset", "method": "POST",
+      "url": "{{ _.base_url }}/Users/Password/Reset",
+      "headers": [ { "name": "Content-Type", "value": "application/json" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"codigo_auth\": \"123456\", \"nova_senha\": \"novaSenha123\" }" },
+      "metaSortKey": -96
+    },
+    {
+      "_id": "req_me", "_type": "request", "parentId": "fld_users", "name": "Perfil (Me)", "method": "GET",
+      "url": "{{ _.base_url }}/Users/Me",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -95
+    },
+
+    { "_id": "fld_gyms", "_type": "request_group", "parentId": "wrk_krav", "name": "Gyms", "metaSortKey": -90 },
+    {
+      "_id": "req_gym_create", "_type": "request", "parentId": "fld_gyms", "name": "Criar Academia", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Creation",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"cnpj\": \"12345678000199\", \"nome\": \"Krav Maga Santos\" }" },
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_gym_list", "_type": "request", "parentId": "fld_gyms", "name": "Listar Academias", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/List",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -99
+    },
+    {
+      "_id": "req_invite_create", "_type": "request", "parentId": "fld_gyms", "name": "Gerar Convite", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Invites/Creation",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -98
+    },
+    {
+      "_id": "req_invite_list", "_type": "request", "parentId": "fld_gyms", "name": "Listar Convites", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/Invites/List",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -97
+    },
+    {
+      "_id": "req_invite_delete", "_type": "request", "parentId": "fld_gyms", "name": "Deletar Convite", "method": "DELETE",
+      "url": "{{ _.base_url }}/Gyms/Invites/COLE_ID_CONVITE",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -96
+    },
+    {
+      "_id": "req_join", "_type": "request", "parentId": "fld_gyms", "name": "Solicitar Entrada", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Requests/Join",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"convite_uuid\": \"00000000-0000-0000-0000-000000000000\" }" },
+      "metaSortKey": -95
+    },
+    {
+      "_id": "req_join_list", "_type": "request", "parentId": "fld_gyms", "name": "Listar Solicitacoes", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/Requests/Join/List",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -94
+    },
+    {
+      "_id": "req_join_approve", "_type": "request", "parentId": "fld_gyms", "name": "Aprovar Solicitacao", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Requests/Join/Approve",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"id_solicitacao\": \"COLE_ID_SOLICITACAO\" }" },
+      "metaSortKey": -93
+    },
+    {
+      "_id": "req_students_list", "_type": "request", "parentId": "fld_gyms", "name": "Listar Alunos", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/Students/List",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -92
+    },
+    {
+      "_id": "req_student_delete", "_type": "request", "parentId": "fld_gyms", "name": "Remover Aluno", "method": "DELETE",
+      "url": "{{ _.base_url }}/Gyms/Students/COLE_ID_ALUNO",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -91
+    },
+    {
+      "_id": "req_student_belt", "_type": "request", "parentId": "fld_gyms", "name": "Atualizar Faixa", "method": "PUT",
+      "url": "{{ _.base_url }}/Gyms/Students/COLE_ID_ALUNO/Belt",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"faixa\": \"azul\" }" },
+      "metaSortKey": -90
+    },
+    {
+      "_id": "req_instructor_create", "_type": "request", "parentId": "fld_gyms", "name": "Criar Instrutor", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Instructors/Creation",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"id_aluno\": \"COLE_ID_ALUNO\" }" },
+      "metaSortKey": -89
+    },
+    {
+      "_id": "req_location_set", "_type": "request", "parentId": "fld_gyms", "name": "Definir Localizacao", "method": "PUT",
+      "url": "{{ _.base_url }}/Gyms/Location",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"latitude\": -23.96083, \"longitude\": -46.33361 }" },
+      "metaSortKey": -88
+    },
+    {
+      "_id": "req_geolocation", "_type": "request", "parentId": "fld_gyms", "name": "Localizacao Academia", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/Geolocation",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -87
+    },
+
+    { "_id": "fld_classes", "_type": "request_group", "parentId": "wrk_krav", "name": "Classes", "metaSortKey": -80 },
+    {
+      "_id": "req_class_create", "_type": "request", "parentId": "fld_classes", "name": "Criar Aula", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Classes/Creation",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"conteudo\": \"Defesa contra facada\", \"data_aula\": \"2026-06-11 19:30\", \"faixa\": \"branca\" }" },
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_class_update", "_type": "request", "parentId": "fld_classes", "name": "Atualizar Aula", "method": "PUT",
+      "url": "{{ _.base_url }}/Gyms/Classes/Update",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"id_aula\": \"COLE_ID_AULA\", \"conteudo\": \"Defesa contra estrangulamento\", \"data_aula\": \"2026-06-12 20:00\", \"faixa\": \"branca\" }" },
+      "metaSortKey": -99
+    },
+    {
+      "_id": "req_class_day", "_type": "request", "parentId": "fld_classes", "name": "Aulas do Dia", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/Classes/Day",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -98
+    },
+    {
+      "_id": "req_class_list", "_type": "request", "parentId": "fld_classes", "name": "Aulas (Professor)", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/Classes?data=2026-06-11",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -97
+    },
+
+    { "_id": "fld_catalog", "_type": "request_group", "parentId": "wrk_krav", "name": "Catalog", "metaSortKey": -70 },
+    {
+      "_id": "req_prod_create", "_type": "request", "parentId": "fld_catalog", "name": "Criar Produto", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Catalog/Creation",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"nome\": \"Kimono\", \"preco\": 299.9, \"tamanho\": \"M\", \"quantidade\": 5, \"imagem_url\": \"https://exemplo.com/kimono.png\" }" },
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_prod_update", "_type": "request", "parentId": "fld_catalog", "name": "Atualizar Produto", "method": "PUT",
+      "url": "{{ _.base_url }}/Gyms/Catalog/Update",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"id_produto\": \"COLE_ID_PRODUTO\", \"nome\": \"Kimono Reforcado\", \"preco\": 349.9, \"tamanho\": \"G\", \"quantidade\": 3, \"imagem_url\": \"https://exemplo.com/kimono2.png\" }" },
+      "metaSortKey": -99
+    },
+    {
+      "_id": "req_prod_delete", "_type": "request", "parentId": "fld_catalog", "name": "Deletar Produto", "method": "DELETE",
+      "url": "{{ _.base_url }}/Gyms/Catalog/COLE_ID_PRODUTO",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -98
+    },
+    {
+      "_id": "req_prod_list", "_type": "request", "parentId": "fld_catalog", "name": "Listar Catalogo", "method": "GET",
+      "url": "{{ _.base_url }}/Gyms/Catalog?id_academia=COLE_ID_ACADEMIA",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -97
+    },
+    {
+      "_id": "req_email", "_type": "request", "parentId": "fld_catalog", "name": "Enviar Email", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Products/Email",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"para\": \"aluno@email.com\", \"conteudo\": \"Seu kimono chegou, passa na academia pra retirar.\" }" },
+      "metaSortKey": -96
+    },
+
+    { "_id": "fld_student", "_type": "request_group", "parentId": "wrk_krav", "name": "Student", "metaSortKey": -60 },
+    {
+      "_id": "req_presence", "_type": "request", "parentId": "fld_student", "name": "Registrar Presenca", "method": "POST",
+      "url": "{{ _.base_url }}/Student/Presence",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"id_aula\": \"COLE_ID_AULA\", \"latitude\": -23.96083, \"longitude\": -46.33361 }" },
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_presence_count", "_type": "request", "parentId": "fld_student", "name": "Contar Presencas", "method": "GET",
+      "url": "{{ _.base_url }}/Student/Presence/Count?id_aluno=COLE_ID_ALUNO",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -99
+    },
+    {
+      "_id": "req_interest", "_type": "request", "parentId": "fld_student", "name": "Sinalizar Interesse", "method": "POST",
+      "url": "{{ _.base_url }}/Student/Interest",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"id_produto\": \"COLE_ID_PRODUTO\", \"quantidade\": 1 }" },
+      "metaSortKey": -98
+    },
+
+    { "_id": "fld_payments", "_type": "request_group", "parentId": "wrk_krav", "name": "Payments", "metaSortKey": -50 },
+    {
+      "_id": "req_pix_onboarding", "_type": "request", "parentId": "fld_payments", "name": "Pix Onboarding (Professor)", "method": "POST",
+      "url": "{{ _.base_url }}/Gyms/Pix/Onboarding",
+      "headers": [ { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_payment", "_type": "request", "parentId": "fld_payments", "name": "Pagamento Pix (Aluno)", "method": "POST",
+      "url": "{{ _.base_url }}/Student/Payment",
+      "headers": [ { "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ _.token }}" } ],
+      "body": { "mimeType": "application/json", "text": "{ \"valor_centavos\": 15000 }" },
+      "metaSortKey": -99
+    },
+
+    { "_id": "fld_docs", "_type": "request_group", "parentId": "wrk_krav", "name": "Docs", "metaSortKey": -40 },
+    {
+      "_id": "req_swagger", "_type": "request", "parentId": "fld_docs", "name": "Swagger UI (escondido)", "method": "GET",
+      "url": "{{ _.base_url }}/internal/docs/krav-9f3a",
+      "metaSortKey": -100
+    }
+  ]
+}

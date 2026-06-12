@@ -104,6 +104,11 @@ type AcademiaVinculo struct {
 func PerfilUsuario(id_usuario string) (entities.Usuarios, string, string, []AcademiaVinculo) {
 	usuario := Repository.SelectWhere[entities.Usuarios]("ID", id_usuario)
 
+	if usuario.EnderecoID != "" {
+		endereco := Repository.SelectWhere[entities.Endereco]("ID", usuario.EnderecoID)
+		usuario.Endereco = *endereco
+	}
+
 	academias := []AcademiaVinculo{}
 
 	professores := Repository.SelectWhereList[entities.Professores]("id_usuario_professor", id_usuario)
@@ -411,7 +416,7 @@ func RegistrarPresenca(id_usuario string, id_aula string, latitude float64, long
 	}
 
 	distancia := InterfaceAdapters.CalcularDistanciaMetros(latitude, longitude, *academia.Latitude, *academia.Longitude)
-	if distancia >= 500 {
+	if distancia >= 1000 {
 		return errors.New("voce esta longe demais da academia para registrar presenca")
 	}
 
@@ -598,16 +603,53 @@ func SinalizarInteresse(id_usuario string, id_produto string, quantidade int) er
 	return nil
 }
 
+// ConfigurarRecebimentoPix cria a conta conectada do professor na Stripe (se ainda nao existir)
+// e devolve a URL de onboarding pra ele cadastrar a chave Pix.
+func ConfigurarRecebimentoPix(id_usuario string) (string, error) {
+	professor := Repository.SelectWhere[entities.Professores]("id_usuario_professor", id_usuario)
+	if professor.IDProfessor == "" {
+		return "", errors.New("voce nao eh professor de nenhuma academia")
+	}
+
+	academia := Repository.SelectWhere[entities.Academias]("ID", professor.IDAcademiaProfessor)
+
+	if academia.StripeAccountID == "" {
+		usuario := Repository.SelectWhere[entities.Usuarios]("ID", id_usuario)
+		conta, err := InterfaceAdapters.StripeCriarContaConectada(usuario.Email)
+		if err != nil {
+			return "", err
+		}
+		Repository.UpdateGymStripeAccount(academia.ID, conta.ID)
+		academia.StripeAccountID = conta.ID
+	}
+
+	link, err := InterfaceAdapters.StripeCriarAccountLink(academia.StripeAccountID)
+	if err != nil {
+		return "", err
+	}
+
+	return link.URL, nil
+}
+
+func EnviarEmail(para string, conteudo string) error {
+	return InterfaceAdapters.EnviarEmail(conteudo, []string{para})
+}
+
 func RealizarPagamento(id_usuario string, valor_centavos int64) (string, string, error) {
 	aluno := Repository.SelectWhere[entities.Alunos]("id_usuario_aluno", id_usuario)
 	if aluno.IDAluno == "" {
 		return "", "", errors.New("voce nao eh aluno de nenhuma academia")
 	}
 
+	academia := Repository.SelectWhere[entities.Academias]("ID", aluno.IDAcademiaAluno)
+	if academia.StripeAccountID == "" {
+		return "", "", errors.New("essa academia ainda nao configurou o recebimento via Pix")
+	}
+
 	usuario := Repository.SelectWhere[entities.Usuarios]("ID", id_usuario)
 
 	descricao := fmt.Sprintf("Mensalidade academia - aluno %s", usuario.Nome)
-	resposta_stripe, err := InterfaceAdapters.StripeCriarPagamento(valor_centavos, descricao)
+	resposta_stripe, err := InterfaceAdapters.StripeCriarPagamento(valor_centavos, descricao, academia.StripeAccountID)
 	if err != nil {
 		return "", "", err
 	}

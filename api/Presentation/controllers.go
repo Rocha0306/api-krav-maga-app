@@ -1,6 +1,7 @@
 package Presentation
 
 import (
+	"api-back-end/api/InterfaceAdapters"
 	"api-back-end/api/UsersCase"
 	"errors"
 	"net/http"
@@ -134,6 +135,7 @@ func ControllerPerfilUsuario(response http.ResponseWriter, request *http.Request
 		CPF:            usuario.CPF,
 		DataNascimento: usuario.DataNascimento,
 		EnderecoID:     usuario.EnderecoID,
+		CEP:            usuario.Endereco.CEP,
 		Role:           role,
 		Faixa:          faixa,
 		Academias:      academiasDTO,
@@ -667,6 +669,43 @@ func ControllerLocalizacaoAcademia(response http.ResponseWriter, request *http.R
 	Status200(response, LocalizacaoAcademiaDTO{Latitude: latitude, Longitude: longitude})
 }
 
+func ControllerEnviarEmail(response http.ResponseWriter, request *http.Request) {
+	_, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	dto := Desserializar[EnviarEmailDTO](request)
+	if error_ := validator.New(validator.WithRequiredStructEnabled()).Struct(dto); error_ != nil {
+		BadRequest(response, error_)
+		return
+	}
+
+	if err := UsersCase.EnviarEmail(dto.Para, dto.Conteudo); err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, "Email enviado com sucesso")
+}
+
+func ControllerConfigurarRecebimentoPix(response http.ResponseWriter, request *http.Request) {
+	id_usuario, err := ValidarJwt(*request)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	url_onboarding, err := UsersCase.ConfigurarRecebimentoPix(id_usuario)
+	if err != nil {
+		BadRequest(response, err)
+		return
+	}
+
+	Status200(response, RespostaOnboardingPixDTO{URL: url_onboarding})
+}
+
 func ControllerRealizarPagamento(response http.ResponseWriter, request *http.Request) {
 	id_usuario, err := ValidarJwt(*request)
 	if err != nil {
@@ -728,4 +767,14 @@ func ControllerListarAulasProfessor(response http.ResponseWriter, request *http.
 
 	Status200(response, MapearAulas(aulas))
 
+}
+
+func ControllerSwaggerUI(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	response.Write([]byte(InterfaceAdapters.SwaggerUIHTML()))
+}
+
+func ControllerSwaggerJSON(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json; charset=utf-8")
+	response.Write([]byte(InterfaceAdapters.OpenApiSpec()))
 }

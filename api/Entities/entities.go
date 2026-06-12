@@ -33,11 +33,12 @@ type Usuarios struct {
 func (Usuarios) TableName() string { return "usuarios" }
 
 type Academias struct {
-	ID        string   `gorm:"primaryKey;column:ID;type:varchar(100)"`
-	Nome      string   `gorm:"column:nome;type:varchar(100);uniqueIndex;not null"`
-	CNPJ      string   `gorm:"column:CNPJ;type:varchar(14);uniqueIndex;not null"`
-	Latitude  *float64 `gorm:"column:latitude"`
-	Longitude *float64 `gorm:"column:longitude"`
+	ID              string   `gorm:"primaryKey;column:ID;type:varchar(100)"`
+	Nome            string   `gorm:"column:nome;type:varchar(100);uniqueIndex;not null"`
+	CNPJ            string   `gorm:"column:CNPJ;type:varchar(14);uniqueIndex;not null"`
+	Latitude        *float64 `gorm:"column:latitude"`
+	Longitude       *float64 `gorm:"column:longitude"`
+	StripeAccountID string   `gorm:"column:stripe_account_id;type:varchar(100)"`
 }
 
 func (Academias) TableName() string { return "academias" }
